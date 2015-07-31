@@ -9,7 +9,7 @@ module Ruboty
           secret_key = ENV['RUBOTY_AWS_SECRET_ACCESS_KEY']
           region     = ENV['RUBOTY_AWS_EC2_REGIONS'] ||= 'ap-northeast-1'
 
-          reply = "```\n"
+          reply = "```\n#{Time.now}\n"
           ec2   = ::Aws::EC2::Client.new({:region => region, :access_key_id => access_key, :secret_access_key => secret_key})
           resp  = ec2.describe_instances
           resp.reservations.each do |reservation|
