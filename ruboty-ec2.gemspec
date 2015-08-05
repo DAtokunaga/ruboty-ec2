@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{Sakutto Kouchiku EC2 Control}
   spec.description   = %q{Sakutto Kouchiku EC2 Control}
   spec.homepage      = ""
-  spec.license       = "MIT"
+  spec.license       = ""
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }

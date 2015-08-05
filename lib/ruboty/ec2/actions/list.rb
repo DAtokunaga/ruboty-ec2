@@ -5,20 +5,29 @@ module Ruboty
     module Actions
       class List < Ruboty::Actions::Base
         def call
-          access_key = ENV['RUBOTY_AWS_ACCESS_KEY_ID']
-          secret_key = ENV['RUBOTY_AWS_SECRET_ACCESS_KEY']
-          region     = ENV['RUBOTY_AWS_EC2_REGIONS'] ||= 'ap-northeast-1'
+          message.reply(list)
+        end
+
+        private
+
+        def list
+          helper     = Ruboty::Ec2::Helpers::Common.new(message)
+          aws_config = helper.get_aws_config
+          source_ch  = helper.get_channel
+          raise "必要な環境変数が設定されていません" if !aws_config[:access_key_id] or !aws_config[:secret_access_key]
 
           reply = "```\n#{Time.now}\n"
-          ec2   = ::Aws::EC2::Client.new({:region => region, :access_key_id => access_key, :secret_access_key => secret_key})
+          reply << "this channel is #{source_ch}\n"
+          ec2   = ::Aws::EC2::Client.new(aws_config)
           resp  = ec2.describe_instances
           resp.reservations.each do |reservation|
             reservation.instances.each do |instance|
-              reply += "#{instance.instance_id} "
+              reply << "#{instance.instance_id} "
             end
           end
-          reply += "\n```"
-          message.reply("#{reply}")
+          reply << "\n```"
+        rescue => e
+          e.message
         end
       end
     end

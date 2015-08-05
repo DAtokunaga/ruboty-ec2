@@ -1,14 +1,14 @@
 module Ruboty
   module Ec2
     module Actions
-      class Start < Ruboty::Actions::Base
+      class Edit < Ruboty::Actions::Base
         def call
-          message.reply(start)
+          message.reply(edit)
         end
 
         private
 
-        def start
+        def edit
           "TODO: write your logic."
         rescue => e
           e.message

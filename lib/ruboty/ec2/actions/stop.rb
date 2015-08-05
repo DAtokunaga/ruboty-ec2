@@ -3,7 +3,15 @@ module Ruboty
     module Actions
       class Stop < Ruboty::Actions::Base
         def call
-          message.reply("TODO: write a message.")
+          message.reply(stop)
+        end
+
+        private
+
+        def stop
+          "TODO: write your logic."
+        rescue => e
+          e.message
         end
       end
     end

@@ -3,7 +3,15 @@ module Ruboty
     module Actions
       class Destroy < Ruboty::Actions::Base
         def call
-          message.reply("TODO: write a message.")
+          message.reply(destroy)
+        end
+
+        private
+
+        def destroy
+          "TODO: write your logic."
+        rescue => e
+          e.message
         end
       end
     end
