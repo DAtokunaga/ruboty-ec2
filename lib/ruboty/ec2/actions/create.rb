@@ -9,7 +9,6 @@ module Ruboty
         private
 
         def create
-p message
           "TODO: write your logic."
         rescue => e
           e.message

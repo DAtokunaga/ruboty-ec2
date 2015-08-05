@@ -3,13 +3,13 @@ module Ruboty
     module Helpers
       class Common
         def initialize(message)
-          @message = message
+          @msg = message
         end
 
         def get_aws_config
           access_key, secret_key, region = nil
           if channels = ENV['RUBOTY_EC2_CHANNELS']
-            source_ch = @message.original[:source]
+            source_ch = get_channel
             raise "そのチャンネルでは実行できません" if !channels.split(",").include?(source_ch)
             access_key = ENV["RUBOTY_EC2_ACCESS_KEY_#{source_ch}"]
             secret_key = ENV["RUBOTY_EC2_SECRET_KEY_#{source_ch}"]
@@ -19,7 +19,7 @@ module Ruboty
         end
 
         def get_channel
-          @message.original[:source]
+          @msg.original[:from] ? @msg.original[:from].split("@").first : "shell"
         end
 
       end
