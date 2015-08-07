@@ -9,20 +9,43 @@ require "ruboty/ec2/actions/restore"
 require "ruboty/ec2/actions/edit"
 require "ruboty/ec2/actions/desc"
 require "ruboty/ec2/actions/spec"
+require "ruboty/ec2/actions/param"
+require "ruboty/ec2/actions/autostart"
+require "ruboty/ec2/actions/dontstop"
 
 module Ruboty
   module Handlers
     class Ec2 < Base
-      on /ec2 create/, name: 'create', description: 'TODO: write your description'
-      on /ec2 stop/, name: 'stop', description: 'TODO: write your description'
-      on /ec2 start/, name: 'start', description: 'TODO: write your description'
-      on /ec2 destroy/, name: 'destroy', description: 'TODO: write your description'
-      on /ec2 list/, name: 'list', description: 'TODO: write your description'
-      on /ec2 backup/, name: 'backup', description: 'TODO: write your description'
-      on /ec2 restore/, name: 'restore', description: 'TODO: write your description'
-      on /ec2 edit/, name: 'edit', description: 'TODO: write your description'
-      on /ec2 desc/, name: 'desc', description: 'TODO: write your description'
-      on /ec2 spec/, name: 'spec', description: 'TODO: write your description'
+      # 自動起動／停止系
+      on(
+        /ec2 autostart (?<cmd>exec|list|add|del) +(?<ins_name>\S+)\z/,
+        name: 'autostart', description: 'manage auto-start instances'
+      )
+      on(
+        /ec2 dontstop (?<cmd>exec|list|add|del) +(?<ins_name>\S+)\z/,
+        name: 'dontstop', description: 'manage auto-stop instances'
+      )
+
+      # インスタンス操作系
+      on(
+        /ec2 create (?<ins_name>\S+) *(?<ami_id>\S+)*\z/,
+        name: 'create', description: 'create instance'
+      )
+      on /ec2 stop (?<ins_name>\S+)\z/,    name: 'stop',    description: 'stop instance'
+      on /ec2 start (?<ins_name>\S+)\z/,   name: 'start',   description: 'start instance'
+      on /ec2 destroy (?<ins_name>\S+)\z/, name: 'destroy', description: 'destroy instance'
+      on /ec2 backup (?<ins_name>\S+)\z/,  name: 'backup',  description: 'backup instance'
+      on /ec2 restore (?<ins_name>\S+)\z/, name: 'restore', description: 'restore backed up instance'
+
+      # インスタンスメタ情報管理系
+      on /ec2 list *(?<resource>\S+)*\z/,  name: 'list',    description: 'show list of instance, backup and AMI'
+      on /ec2 desc (?<ins_name>\S+)\z/,    name: 'desc',    description: 'show instance description'
+      on /ec2 spec (?<ins_name>\S+)\z/,    name: 'spec',    description: 'show instance spec'
+      on /ec2 param (?<ins_name>\S+)\z/,   name: 'param',   description: 'show instance param'
+      on(
+        /ec2 edit (?<tag>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/,
+        name: 'edit', description: 'edit data of spec, desc and param'
+      )
 
       def create(message)
         Ruboty::Ec2::Actions::Create.new(message).call
@@ -62,6 +85,18 @@ module Ruboty
 
       def spec(message)
         Ruboty::Ec2::Actions::Spec.new(message).call
+      end
+
+      def param(message)
+        Ruboty::Ec2::Actions::Param.new(message).call
+      end
+
+      def autostart(message)
+        Ruboty::Ec2::Actions::Autostart.new(message).call
+      end
+
+      def dontstop(message)
+        Ruboty::Ec2::Actions::Dontstop.new(message).call
       end
     end
   end
