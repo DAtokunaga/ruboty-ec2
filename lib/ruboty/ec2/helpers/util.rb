@@ -16,9 +16,9 @@ module Ruboty
         def check_channel
           if channels = ENV['RUBOTY_EC2_CHANNELS']
             from_ch = get_channel
-            raise "そのチャンネルでは実行しちゃだめー" if !channels.split(",").include?(from_ch)
+            raise "このチャンネルでは実行できないよ" if !channels.split(",").include?(from_ch)
           else
-            raise "環境変数が足りてないみたい。。[RUBOTY_EC2_CHANNELS]"
+            raise "環境変数[RUBOTY_EC2_CHANNELS]の設定が足りないみたい。。"
           end
         end
 
@@ -33,21 +33,21 @@ module Ruboty
         def get_domain
           from_ch   = get_channel
           domain    = ENV["RUBOTY_EC2_DOMAIN_#{from_ch}"]
-          raise "環境変数が足りてないみたい。。[RUBOTY_EC2_DOMAIN_#{from_ch}]" if domain.nil? or domain.empty?
+          raise "環境変数[RUBOTY_EC2_DOMAIN_#{from_ch}]の設定が足りないみたい。。" if domain.nil? or domain.empty?
           domain
         end
 
         def get_default_ami
           from_ch   = get_channel
           ami_id    = ENV["RUBOTY_EC2_DEFAULT_AMI_#{from_ch}"]
-          raise "環境変数が足りてないみたい。。[RUBOTY_EC2_DEFAULT_AMI_#{from_ch}]" if ami_id.nil? or ami_id.empty?
+          raise "環境変数[RUBOTY_EC2_DEFAULT_AMI_#{from_ch}]の設定が足りないみたい。。" if ami_id.nil? or ami_id.empty?
           ami_id
         end
 
         def get_subnet_id
           from_ch   = get_channel
           subnet_id = ENV["RUBOTY_EC2_SUBNET_ID_#{from_ch}"]
-          raise "環境変数が足りてないみたい。。[RUBOTY_EC2_SUBNET_ID_#{from_ch}]" if subnet_id.nil? or subnet_id.empty?
+          raise "環境変数[RUBOTY_EC2_SUBNET_ID_#{from_ch}]の設定が足りないみたい。。" if subnet_id.nil? or subnet_id.empty?
           subnet_id
         end
 

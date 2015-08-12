@@ -35,12 +35,12 @@ module Ruboty
               ami_name  = name
             end
           end
-          raise "AMI IDが間違っているよ[#{ami_id}]" if !exist_flg
+          raise "AMI ID[#{ami_id}]が間違っているよ" if !exist_flg
 
           ## インスタンス名重複チェック
           ins_infos.each do |name, ins|
             next if ins[:state] == "terminated"
-            raise "インスタンス名がかぶってるよー[#{name}]" if ins_name == name
+            raise "インスタンス名[#{name}]がかぶってるよー" if ins_name == name
           end
 
           # 使用するIPアドレスを取得
@@ -67,10 +67,10 @@ module Ruboty
           ec2.update_tags(ins_id, params)
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
-          message.reply("インスタンスを作成したよ[#{ins_name}]\nDNS設定完了までもう少し待っててね")
+          message.reply("インスタンス[#{ins_name}]を作成したよ. DNS設定完了までもう少し待っててね")
 
           # パブリックIPを取得
-          public_ip = ec2.wait_for_associate_public_ip(ins_id)
+          public_ip = ec2.wait_for_associate_public_ip(ins_id, ins_name)
 
           # DNS設定
           r53.update_record_sets(ins_name, public_ip)

@@ -108,16 +108,16 @@ module Ruboty
           @ec2.create_tags(params)
         end
 
-        def wait_for_associate_public_ip(ins_id)
+        def wait_for_associate_public_ip(ins_id, ins_name)
           started_at = Time.now
           public_ip  = nil
           while public_ip.nil? do
             sleep(1)
             ins_info  = get_ins_infos(ins_id)
-            public_ip = ins_info[:public_ip] if !ins_info.flatten.last[:public_ip].nil?
+            public_ip = ins_info[ins_name][:public_ip] if !ins_info[ins_name].nil?
             break if ins_info.empty? or (Time.now - started_at).to_i > 60
           end
-          raise "インスタンス[#{ins_info[:name]}]が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ" if public_ip.nil?
+          raise "インスタンス[#{ins_name}]が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ" if public_ip.nil?
           public_ip
         end
 
