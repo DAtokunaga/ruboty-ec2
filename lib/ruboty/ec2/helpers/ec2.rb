@@ -112,11 +112,10 @@ module Ruboty
           started_at = Time.now
           public_ip  = nil
           while public_ip.nil? do
-            sleep(5)
+            sleep(1)
             ins_info  = get_ins_infos(ins_id)
-p ins_info
-            public_ip = ins_info[:public_ip] if !ins_info[:public_ip].nil?
-            break if (Time.now - started_at).to_i > 3600
+            public_ip = ins_info[:public_ip] if !ins_info.flatten.last[:public_ip].nil?
+            break if ins_info.empty? or (Time.now - started_at).to_i > 60
           end
           raise "インスタンス[#{ins_info[:name]}]が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ" if public_ip.nil?
           public_ip
