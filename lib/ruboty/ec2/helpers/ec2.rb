@@ -114,6 +114,7 @@ module Ruboty
           while public_ip.nil? do
             sleep(5)
             ins_info  = get_ins_infos(ins_id)
+p ins_info
             public_ip = ins_info[:public_ip] if !ins_info[:public_ip].nil?
             break if (Time.now - started_at).to_i > 3600
           end
