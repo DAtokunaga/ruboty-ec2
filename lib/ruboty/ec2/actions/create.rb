@@ -19,6 +19,17 @@ module Ruboty
           ami_id   = message[:ami_id]
           caller   = util.get_caller
 
+          # 入力チェック
+          if !ins_name.match(/^[a-z]+[a-z0-9\-]*$/) or ins_name.length > 15
+            warn_msg =  "インスタンス名は↓このルールで指定してね\n"
+            warn_msg << "```\n"
+            warn_msg << "  許容文字 -> /^[a-z]+[a-z0-9\-]*$/\n"
+            warn_msg << "  文字列長 -> 15文字以内\n"
+            warn_msg << "```"
+            raise warn_msg
+return "ng -> #{ins_name}"
+          end
+return "ok -> #{ins_name}"
           ## 現在利用中のインスタンス／AMIの情報を取得
           ins_infos = ec2.get_ins_infos
           ami_infos = ec2.get_ami_infos
