@@ -15,6 +15,7 @@ module Ruboty
 
           # チャットコマンド情報取得
           ins_name = message[:ins_name]
+          caller   = util.get_caller
 
           ## 現在利用中のインスタンス情報を取得
           ins_infos = ec2.get_ins_infos(ins_name)
@@ -29,6 +30,9 @@ module Ruboty
           ins_info = ins_infos[ins_name]
           raise "インスタンス[#{ins_name}]は既に削除済みだよ" if ins_info[:state] == "terminated"
           raise "インスタンス[#{ins_name}]を先に停止プリーズ" if ins_info[:state] != "stopped"
+          if caller != ins_info[:owner]
+            raise "インスタンス[#{ins_name}]を削除できるのはオーナー[#{ins_info[:owner]}]だけだよ"
+          end
 
           # 削除処理実施
           ins_id = ins_info[:instance_id]

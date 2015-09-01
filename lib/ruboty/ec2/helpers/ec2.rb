@@ -8,6 +8,7 @@ module Ruboty
           @util      = Util.new(message)
           @subnet_id = @util.get_subnet_id
           @ec2       = ::Aws::EC2::Client.new(@util.get_aws_config)
+p @util.get_aws_config
           raise "SubnetIDが間違っているよ" if !exist_subnet?(@subnet_id)
         end
 
@@ -138,6 +139,13 @@ module Ruboty
           end
           raise "インスタンス[#{ins_name}]が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ" if public_ip.nil?
           public_ip
+        end
+
+        def create_ami(ins_id, ins_name)
+          ami_name = "#{ins_name}_#{Time.now.strftime('%Y%m%d%H%M%S')}"
+          params   = {:instance_id => ins_id, :name => ami_name}
+          ami      = @ec2.create_image(params)
+          ami_id   = ami[:image_id]
         end
 
       end

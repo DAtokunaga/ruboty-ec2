@@ -1,14 +1,14 @@
 module Ruboty
   module Ec2
     module Actions
-      class Restore < Ruboty::Actions::Base
+      class Extract < Ruboty::Actions::Base
         def call
-          message.reply(restore)
+          message.reply(extract)
         end
 
         private
 
-        def restore
+        def extract
           "TODO: write your logic."
         rescue => e
           e.message

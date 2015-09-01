@@ -8,7 +8,7 @@ require "ruboty/ec2/actions/start"
 require "ruboty/ec2/actions/destroy"
 require "ruboty/ec2/actions/list"
 require "ruboty/ec2/actions/archive"
-require "ruboty/ec2/actions/restore"
+require "ruboty/ec2/actions/extract"
 require "ruboty/ec2/actions/edit"
 require "ruboty/ec2/actions/desc"
 require "ruboty/ec2/actions/spec"
@@ -33,7 +33,7 @@ module Ruboty
       on /ec2 start (?<ins_name>\S+)\z/,   name: 'start',     description: 'start instance'
       on /ec2 destroy (?<ins_name>\S+)\z/, name: 'destroy',   description: 'destroy instance'
       on /ec2 archive (?<ins_name>\S+)\z/, name: 'archive',   description: 'archive instance'
-      on /ec2 restore (?<ins_name>\S+)\z/, name: 'restore',   description: 'restore backed up instance'
+      on /ec2 extract (?<ins_name>\S+)\z/, name: 'extract',   description: 'extract backed up instance'
       on /ec2 copy (?<from_ins>\S+) +(?<to_ins>\S+)\z/,
                                            name: 'copy',      description: 'copy instance'
 
@@ -69,8 +69,8 @@ module Ruboty
         Ruboty::Ec2::Actions::Archive.new(message).call
       end
 
-      def restore(message)
-        Ruboty::Ec2::Actions::Restore.new(message).call
+      def extract(message)
+        Ruboty::Ec2::Actions::Extract.new(message).call
       end
 
       def edit(message)

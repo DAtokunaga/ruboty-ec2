@@ -6,7 +6,6 @@ module Ruboty
       class Brain
         NAMESPACE = 'ec2'
         def initialize(message)
-          @msg   = message
           @brain = message.robot.brain.data[NAMESPACE] ||= {}
         end
 
@@ -15,7 +14,6 @@ module Ruboty
           @brain[ins_name] ||= {:uptime => {}}
           @brain[ins_name][:uptime][yyyymm] ||= 0
           @brain[ins_name][:uptime][yyyymm] += uptime
-p @brain
         end
 
         def get_ins_uptime(yyyymm = nil)
