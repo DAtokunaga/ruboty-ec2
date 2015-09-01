@@ -28,15 +28,6 @@ module Ruboty
           ins_uptime
         end
 
-        def calc_uptime(from_str, to_str = nil)
-          to_str     = Time.now.to_s if to_str.nil?
-          uptime_sec = Time.parse(to_str) - Time.parse(from_str)
-          # 月単位のため750以上になった場合は異常値としてスキップ
-          return 0 if uptime_sec < 1 or uptime_sec > 750
-          # 課金時間計算なので、1時間に満たないものも1と数える
-          uptime_hour = (uptime_sec / 3600).to_i + 1
-        end
-
       end
     end
   end

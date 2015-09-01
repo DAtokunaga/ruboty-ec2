@@ -7,6 +7,7 @@ module Ruboty
         def initialize(message)
           @msg = message
           check_channel
+          check_command
         end
 
         def now
@@ -19,6 +20,21 @@ module Ruboty
             raise "このチャンネルでは実行できないよ" if !channels.split(",").include?(from_ch)
           else
             raise "環境変数[RUBOTY_EC2_CHANNELS]の設定が足りないみたい。。"
+          end
+        end
+
+        def check_command
+          cmd_name = ""
+          caller.each do |cl|
+            next if cl.index("handlers").nil? or !cmd_name.empty?
+            cmd_name = cl[/`([^']*)'/, 1]
+          end
+          from_ch  = get_channel
+          ng_list  = ENV["RUBOTY_EC2_NOT_ALLOWED_CMD_#{from_ch}"] ||= ""
+          return if ng_list.empty?
+          ng_array = ng_list.split(",")
+          if ng_array.include?(cmd_name)
+            raise "コマンド#{ng_array}を実行する権限がないよ"
           end
         end
 
@@ -81,6 +97,15 @@ module Ruboty
             else state = "\u{203C}"
           end
           state
+        end
+
+        def get_time_diff(from_str, to_str = nil)
+          to_str     = Time.now.to_s if to_str.nil?
+          uptime_sec = Time.parse(to_str) - Time.parse(from_str)
+          # 課金時間計算なので、1時間に満たないものも1と数える
+          uptime_hour = (uptime_sec / 3600).to_i + 1
+          return 0 if uptime_hour < 1
+          uptime_hour
         end
 
       end

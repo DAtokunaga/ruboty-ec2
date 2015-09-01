@@ -8,7 +8,6 @@ module Ruboty
           @util      = Util.new(message)
           @subnet_id = @util.get_subnet_id
           @ec2       = ::Aws::EC2::Client.new(@util.get_aws_config)
-p @util.get_aws_config
           raise "SubnetIDが間違っているよ" if !exist_subnet?(@subnet_id)
         end
 

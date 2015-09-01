@@ -10,7 +10,7 @@ module Ruboty
 
         def stop
           # AWSアクセス、その他ユーティリティのインスタンス化
-          #util = Ruboty::Ec2::Helpers::Util.new(message)
+          util = Ruboty::Ec2::Helpers::Util.new(message)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           r53  = Ruboty::Ec2::Helpers::Route53.new(message)
 
@@ -38,7 +38,7 @@ module Ruboty
           if !last_used_time.nil? and !last_used_time.empty?
             brain = Ruboty::Ec2::Helpers::Brain.new(message)
             # LastUsedTimeから現在までの課金対象時間を算出
-            uptime = brain.calc_uptime(last_used_time)
+            uptime = util.get_time_diff(last_used_time)
             # Redis上の月別稼働時間累積値を更新
             brain.save_ins_uptime(ins_name, uptime)
           end

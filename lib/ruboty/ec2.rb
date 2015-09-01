@@ -12,6 +12,11 @@ module Ruboty
       VolType = "gp2"
       # iam instance profile name
       IamRole = "sakutto-ec2"
+
+      # Period to archive(days)
+      PeriodToArchive = 20
+      # Period to archive notification(days)
+      PeriodToArchiveNotice = 15
     end
   end
 end
