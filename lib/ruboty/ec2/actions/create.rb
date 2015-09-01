@@ -38,7 +38,7 @@ module Ruboty
             ami_id = util.get_default_ami
           end
           exist_flg = false
-          ami_name      = nil
+          ami_name  = nil
           ami_infos.each do |name, ami|
             if ami[:image_id] == ami_id
               exist_flg = true
@@ -49,7 +49,7 @@ module Ruboty
 
           ## インスタンス名重複チェック
           ins_infos.each do |name, ins|
-            next if ins[:state] == "terminated"
+            #next if ins[:state] == "terminated"
             raise "インスタンス名[#{name}]がかぶってるよー" if ins_name == name
           end
 
@@ -80,7 +80,7 @@ module Ruboty
           message.reply("インスタンス[#{ins_name}]を作成したよ. DNS設定完了までもう少し待っててね")
 
           # パブリックIPを取得
-          public_ip = ec2.wait_for_associate_public_ip(ins_id, ins_name)
+          public_ip = ec2.wait_for_associate_public_ip(ins_name)
 
           # DNS設定
           r53.update_record_sets(ins_name, public_ip)

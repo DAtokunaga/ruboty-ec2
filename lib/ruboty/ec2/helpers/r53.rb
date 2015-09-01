@@ -64,6 +64,33 @@ module Ruboty
           @r53.change_resource_record_sets(params)
         end
 
+        def delete_record_sets(ins_name, public_ip)
+          # check exist fqdn
+          params = {
+            :hosted_zone_id => @zone_id,
+            :start_record_name => "#{ins_name}.#{@domain}",
+            :start_record_type => "A"
+          }
+          resp = @r53.list_resource_record_sets(params)
+          return if resp.resource_record_sets.size == 0
+          # delete record set
+          params = {
+            :hosted_zone_id => @zone_id,
+            :change_batch   => {
+              :changes      => [{
+                :action     => "DELETE",
+                :resource_record_set => {
+                  :name     => "#{ins_name}.#{@domain}",
+                  :type     => "A",
+                  :ttl      => 60,
+                  :resource_records => [{:value => public_ip}]
+                }
+              }]
+            }
+          }
+          @r53.change_resource_record_sets(params)
+        end
+
       end
     end
   end

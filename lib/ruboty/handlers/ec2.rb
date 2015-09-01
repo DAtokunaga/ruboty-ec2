@@ -1,4 +1,5 @@
 require "ruboty/ec2/helpers/util"
+require "ruboty/ec2/helpers/brain"
 require "ruboty/ec2/helpers/ec2"
 require "ruboty/ec2/helpers/r53"
 require "ruboty/ec2/actions/create"

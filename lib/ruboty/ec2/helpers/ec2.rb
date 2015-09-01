@@ -23,9 +23,12 @@ module Ruboty
           resp.subnets.first.cidr_block
         end
 
-        def get_ins_infos(ins_id = nil)
-          params     = {}
-          params     = {:instance_ids => [ins_id]} if !ins_id.nil?
+        def get_ins_infos(ins_name = nil)
+          filter_str = {:filters => [
+                           {:name => "tag-key",   :values => ["Name"]},
+                           {:name => "tag-value", :values => [ins_name]}
+                         ]}
+          params     = (ins_name ? filter_str : {})
           resp       = @ec2.describe_instances(params)
           ins_infos  = {}
 
@@ -44,6 +47,7 @@ module Ruboty
               ins_info[:private_ip]    = ins.private_ip_address
               ins_info[:public_ip]     = ins.public_ip_address
               ins.tags.each do |tag|
+                next if tag.value.empty?
                 ins_info[tag.key.snakecase.to_sym] = tag.value
               end
               name = ins_info[:name] ? ins_info[:name] : ins_info[:instance_id]
@@ -53,8 +57,12 @@ module Ruboty
           ins_infos
         end
 
-        def get_ami_infos
+        def get_ami_infos(ins_name = nil)
           params    = {:filters => [{:name => "is-public", values: ["false"]}]}
+          if !ins_name.nil?
+            params[:filters] << {:name => "tag-key",   :values => ["Name"]}
+            params[:filters] << {:name => "tag-value", :values => [ins_name]}
+          end
           resp      = @ec2.describe_images(params)
           ami_infos = {}
 
@@ -77,7 +85,6 @@ module Ruboty
             :image_id => _params[:image_id],
             :min_count => 1, :max_count => 1,
             :key_name => Ruboty::Ec2::Const::KeyName,
-            #:security_groups => [Ruboty::Ec2::Const::SgName],
             :instance_type => Ruboty::Ec2::Const::InsType,
             :block_device_mappings => [{
               :device_name => "/dev/sda1",
@@ -86,18 +93,30 @@ module Ruboty
             :network_interfaces => [{
               :device_index => 0,
               :subnet_id => @subnet_id,
-              #:groups => [pc.get_sg_id(:default)],
               :associate_public_ip_address => true,
               :private_ip_address => _params[:private_ip_address]
             }],
             :monitoring => {:enabled => false},
-            #:subnet_id => @subnet_id,
             :iam_instance_profile => {:name => Ruboty::Ec2::Const::IamRole}
           }
-          #params.merge!(_params)
           resp   = @ec2.run_instances(params).first
           ins    = resp[:instances].first
           ins_id = ins[:instance_id]
+        end
+
+        def stop_ins(ins_id)
+          params = {:instance_ids => [ins_id]}
+          @ec2.stop_instances(params)
+        end
+
+        def start_ins(ins_id)
+          params = {:instance_ids => [ins_id]}
+          @ec2.start_instances(params)
+        end
+
+        def destroy_ins(ins_id)
+          params = {:instance_ids => [ins_id]}
+          @ec2.terminate_instances(params)
         end
 
         def update_tags(ins_id, tag_hash)
@@ -108,12 +127,12 @@ module Ruboty
           @ec2.create_tags(params)
         end
 
-        def wait_for_associate_public_ip(ins_id, ins_name)
+        def wait_for_associate_public_ip(ins_name)
           started_at = Time.now
           public_ip  = nil
           while public_ip.nil? do
             sleep(1)
-            ins_info  = get_ins_infos(ins_id)
+            ins_info  = get_ins_infos(ins_name)
             public_ip = ins_info[ins_name][:public_ip] if !ins_info[ins_name].nil?
             break if ins_info.empty? or (Time.now - started_at).to_i > 60
           end
