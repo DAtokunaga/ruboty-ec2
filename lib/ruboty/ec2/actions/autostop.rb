@@ -1,14 +1,14 @@
 module Ruboty
   module Ec2
     module Actions
-      class Autostart < Ruboty::Actions::Base
+      class Autostop < Ruboty::Actions::Base
         def call
-          autostart
+          autostop
         end
 
         private
 
-        def autostart
+        def autostop
           message.reply("TODO: write your logic.")
         rescue => e
           message.reply(e.message)

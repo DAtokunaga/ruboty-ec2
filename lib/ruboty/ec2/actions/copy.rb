@@ -3,7 +3,7 @@ module Ruboty
     module Actions
       class Copy < Ruboty::Actions::Base
         def call
-          message.reply(copy)
+          copy
         end
 
         private
@@ -15,9 +15,9 @@ module Ruboty
           r53  = Ruboty::Ec2::Helpers::Route53.new(message)
 
 
-          "TODO: write your logic."
+          message.reply("TODO: write your logic.")
         rescue => e
-          e.message
+          message.reply(e.message)
         end
       end
     end

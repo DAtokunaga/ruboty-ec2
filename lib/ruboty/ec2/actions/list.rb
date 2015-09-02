@@ -6,10 +6,10 @@ module Ruboty
       class List < Ruboty::Actions::Base
         def call
           resource = message[:resource]
-          message.reply(workspace_list) if !resource
-          message.reply(workspace_list) if resource === "workspace"
-          message.reply(archive_list)   if resource === "archive"
-          message.reply(ami_list)       if resource === "ami"
+          workspace_list if !resource
+          workspace_list if resource === "workspace"
+          archive_list   if resource === "archive"
+          ami_list       if resource === "ami"
         end
 
         private
@@ -18,47 +18,42 @@ module Ruboty
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           ins_infos = ec2.get_ins_infos
 
-          reply = "```\n"
+          reply_msg = ""
           ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ins|
-            reply << sprintf("[%s] %-15s / %s / %s / %-9s / %s\n",
-                             ins[:state_mark], name, ins[:instance_id],
-                             ins[:image_id], ins[:instance_type], ins[:owner])
+            reply_msg << sprintf("[%s] %-15s / %s / %s / %-9s / %s\n",
+                                 ins[:state_mark], name, ins[:instance_id],
+                                 ins[:parent_id], ins[:instance_type], ins[:owner])
           end
-          reply << "```"
+          message.reply(reply_msg, code: true)
         rescue => e
-          e.message
+          message.reply(e.message)
         end
 
         def archive_list
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
-          ami_infos = ec2.get_ami_infos
+          ami_infos = ec2.get_arc_infos
 
-          reply = "```\n"
+          reply_msg = ""
           ami_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
-            # Owner, IpAddrタグを持つAMIが対象
-            next if !ami[:owner] or !ami[:ip_addr]
-            reply << sprintf("[%7s] %-15s / %s / %-15s / %s\n",
-                       ami[:state], ami[:name], ami[:image_id], ami[:ip_addr], ami[:owner])
+            reply_msg << sprintf("[%7s] %-15s / %s / %-15s / %s\n",
+                         ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], ami[:owner])
           end
-          reply << "```"
+          message.reply(reply_msg, code: true)
         rescue => e
-          e.message
+          message.reply(e.message)
         end
 
         def ami_list
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           ami_infos = ec2.get_ami_infos
 
-          reply = "```\n"
+          reply_msg = ""
           ami_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
-            # Owner, IpAddrタグを持たず、Specタグを持つAMIが対象
-            next if ami[:owner] and ami[:ip_addr]
-            next if !ami[:spec]
-            reply << sprintf("[%s] %s\n", ami[:image_id], ami[:spec])
+            reply_msg << sprintf("[%s] %s\n", ami[:image_id], ami[:spec])
           end
-          reply << "```"
+          message.reply(reply_msg, code: true)
         rescue => e
-          e.message
+          message.reply(e.message)
         end
       end
     end

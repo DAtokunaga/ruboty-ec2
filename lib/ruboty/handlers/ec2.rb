@@ -10,11 +10,9 @@ require "ruboty/ec2/actions/list"
 require "ruboty/ec2/actions/archive"
 require "ruboty/ec2/actions/extract"
 require "ruboty/ec2/actions/edit"
-require "ruboty/ec2/actions/desc"
-require "ruboty/ec2/actions/spec"
-require "ruboty/ec2/actions/param"
+require "ruboty/ec2/actions/detail"
 require "ruboty/ec2/actions/autostart"
-require "ruboty/ec2/actions/dontstop"
+require "ruboty/ec2/actions/autostop"
 require "ruboty/ec2/actions/copy"
 
 module Ruboty
@@ -23,8 +21,8 @@ module Ruboty
       # 自動起動／停止系
       on(/ec2 autostart (?<cmd>exec|list|add|del) +(?<ins_name>\S+)\z/,
                                            name: 'autostart', description: 'manage auto-start instances')
-      on(/ec2 dontstop (?<cmd>exec|list|add|del) +(?<ins_name>\S+)\z/,
-                                           name: 'dontstop',  description: 'manage auto-stop instances')
+      on(/ec2 autostop (?<cmd>exec|list|add|del) +(?<ins_name>\S+)\z/,
+                                           name: 'autostop',  description: 'manage auto-stop instances')
 
       # インスタンス操作系
       on(/ec2 create (?<ins_name>\S+) *(?<ami_id>\S+)*\z/,
@@ -39,9 +37,7 @@ module Ruboty
 
       # インスタンスメタ情報管理系
       on /ec2 list *(?<resource>\S+)*\z/,  name: 'list',      description: 'show list of instance, archive and AMI'
-      on /ec2 desc (?<ins_name>\S+)\z/,    name: 'desc',      description: 'show instance description'
-      on /ec2 spec (?<ins_name>\S+)\z/,    name: 'spec',      description: 'show instance spec'
-      on /ec2 param (?<ins_name>\S+)\z/,   name: 'param',     description: 'show instance param'
+      on /ec2 detail (?<ins_name>\S+)\z/,  name: 'detail',    description: 'show instance description'
       on(/ec2 edit (?<tag>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/,
                                            name: 'edit',      description: 'edit data of spec, desc and param')
 
@@ -77,24 +73,16 @@ module Ruboty
         Ruboty::Ec2::Actions::Edit.new(message).call
       end
 
-      def desc(message)
-        Ruboty::Ec2::Actions::Desc.new(message).call
-      end
-
-      def spec(message)
-        Ruboty::Ec2::Actions::Spec.new(message).call
-      end
-
-      def param(message)
-        Ruboty::Ec2::Actions::Param.new(message).call
+      def detail(message)
+        Ruboty::Ec2::Actions::Detail.new(message).call
       end
 
       def autostart(message)
         Ruboty::Ec2::Actions::Autostart.new(message).call
       end
 
-      def dontstop(message)
-        Ruboty::Ec2::Actions::Dontstop.new(message).call
+      def autostop(message)
+        Ruboty::Ec2::Actions::Autostop.new(message).call
       end
 
       def copy(message)

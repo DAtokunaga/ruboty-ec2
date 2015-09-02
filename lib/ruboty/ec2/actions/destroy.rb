@@ -3,7 +3,7 @@ module Ruboty
     module Actions
       class Destroy < Ruboty::Actions::Base
         def call
-          message.reply(destroy)
+          destroy
         end
 
         private
@@ -21,14 +21,15 @@ module Ruboty
           ins_infos = ec2.get_ins_infos(ins_name)
           # 存在チェック
           if ins_infos.empty?
-            ami_infos = ec2.get_ami_infos(ins_name)
-            raise "インスタンス[#{ins_name}]は存在しないよー" if ami_infos.empty?
+            arc_infos = ec2.get_arc_infos(ins_name)
+            raise "インスタンス[#{ins_name}]は存在しないよー" if arc_infos.empty?
             raise "インスタンス[#{ins_name}]はアーカイブ済みだよ"
           end
 
+# TODO: アーカイブされたファイルも削除できるように変更
+
           # ステータス[停止]チェック
           ins_info = ins_infos[ins_name]
-          raise "インスタンス[#{ins_name}]は既に削除済みだよ" if ins_info[:state] == "terminated"
           raise "インスタンス[#{ins_name}]を先に停止プリーズ" if ins_info[:state] != "stopped"
           if caller != ins_info[:owner]
             raise "インスタンス[#{ins_name}]を削除できるのはオーナー[#{ins_info[:owner]}]だけだよ"
@@ -41,9 +42,9 @@ module Ruboty
           # Route53 レコード削除処理
           r53.delete_record_sets(ins_name, ins_info[:public_ip])
 
-          "インスタンス[#{ins_name}]を削除したよ"
+          message.reply("インスタンス[#{ins_name}]を削除したよ")
         rescue => e
-          e.message
+          message.reply(e.message)
         end
       end
     end

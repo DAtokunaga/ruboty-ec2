@@ -3,15 +3,15 @@ module Ruboty
     module Actions
       class Edit < Ruboty::Actions::Base
         def call
-          message.reply(edit)
+          edit
         end
 
         private
 
         def edit
-          "TODO: write your logic."
+          message.reply("TODO: write your logic.")
         rescue => e
-          e.message
+          message.reply(e.message)
         end
       end
     end

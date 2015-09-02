@@ -3,7 +3,7 @@ module Ruboty
     module Actions
       class Stop < Ruboty::Actions::Base
         def call
-          message.reply(stop)
+          stop
         end
 
         private
@@ -47,9 +47,9 @@ module Ruboty
           params =  {"LastUsedTime" => Time.now.to_s}
           ec2.update_tags(ins_id, params)
 
-          "インスタンス[#{ins_name}]を停止したよ"
+          message.reply("インスタンス[#{ins_name}]を停止したよ")
         rescue => e
-          e.message
+          message.reply(e.message)
         end
       end
     end

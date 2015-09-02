@@ -34,6 +34,7 @@ module Ruboty
 
           resp.reservations.each do |reservation|
             reservation.instances.each do |ins|
+              next if ins.state.name == "terminated"
               ins_info                 = {}
               ins_info[:instance_id]   = ins.instance_id
               ins_info[:image_id]      = ins.image_id
@@ -57,7 +58,7 @@ module Ruboty
           ins_infos
         end
 
-        def get_ami_infos(ins_name = nil)
+        def get_arc_infos(ins_name = nil)
           params    = {:filters => [{:name => "is-public", values: ["false"]}]}
           if !ins_name.nil?
             params[:filters] << {:name => "tag-key",   :values => ["Name"]}
@@ -67,15 +68,44 @@ module Ruboty
           ami_infos = {}
 
           resp.images.each do |ami|
+            next if ami.state == "deregistered"
             ami_info            = {}
-            ami_info[:image_id] = ami.image_id
-            ami_info[:ami_name] = ami.name
-            ami_info[:state]    = ami.state
             ami.tags.each do |tag|
               ami_info[tag.key.snakecase.to_sym] = tag.value
             end
+            # Owner, IpAddrタグありをArchive対象とする
+            next if ami_info[:owner].nil?   or ami_info[:owner].empty?
+            next if ami_info[:ip_addr].nil? or ami_info[:ip_addr].empty?
+            ami_info[:image_id] = ami.image_id
+            ami_info[:ami_name] = ami.name
+            ami_info[:state]    = ami.state
             name = ami_info[:name] ? ami_info[:name] : ami_info[:ami_name]
             ami_infos[name] = ami_info
+          end
+          ami_infos
+        end
+
+        def get_ami_infos
+          params    = {:filters => [{:name => "is-public", values: ["false"]}]}
+          resp      = @ec2.describe_images(params)
+          ami_infos = {}
+
+          resp.images.each do |ami|
+            next if ami.state == "deregistered"
+            ami_info = {}
+            ami_id   = ami.image_id
+            ami.tags.each do |tag|
+              ami_info[tag.key.snakecase.to_sym] = tag.value
+            end
+            # Owner, IpAddrタグなし、Spec/DescタグありをAMI対象とする
+            next if !ami_info[:owner].nil?   and !ami_info[:owner].empty?
+            next if !ami_info[:ip_addr].nil? and !ami_info[:ip_addr].empty?
+            next if ami_info[:desc].nil?     or  ami_info[:desc].empty?
+            next if ami_info[:spec].nil?     or  ami_info[:spec].empty?
+            ami_info[:image_id] = ami_id
+            ami_info[:name]     = ami.name
+            ami_info[:state]    = ami.state
+            ami_infos[ami_id]   = ami_info
           end
           ami_infos
         end

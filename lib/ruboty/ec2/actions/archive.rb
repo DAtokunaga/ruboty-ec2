@@ -5,9 +5,9 @@ module Ruboty
         def call
           ins_name = message[:ins_name]
           if ins_name
-            message.reply(archive)
+            archive
           else
-            message.reply(archive_all)
+            archive_all
           end
         end
 
@@ -25,8 +25,8 @@ module Ruboty
           ins_infos = ec2.get_ins_infos(ins_name)
           # 存在チェック
           if ins_infos.empty?
-            ami_infos = ec2.get_ami_infos(ins_name)
-            raise "インスタンス[#{ins_name}]は存在しないよー" if ami_infos.empty?
+            arc_infos = ec2.get_arc_infos(ins_name)
+            raise "インスタンス[#{ins_name}]は存在しないよー" if arc_infos.empty?
             raise "インスタンス[#{ins_name}]はアーカイブ済みだよ"
           end
 
@@ -36,9 +36,9 @@ module Ruboty
 
           # アーカイブ処理実行
           ins_archive(ins_name, ins_info)
-          "インスタンス[#{ins_name}]をアーカイブしたよ"
+          message.reply("インスタンス[#{ins_name}]をアーカイブしたよ")
         rescue => e
-          e.message
+          message.reply(e.message)
         end
 
         def archive_all
@@ -51,7 +51,7 @@ module Ruboty
           remain_days    = period_archive - period_notice
 
           ## 現在利用中のインスタンス情報を取得
-          reply = ""
+          reply_msg = ""
           archive_list = {}
           ins_infos = ec2.get_ins_infos
           ins_infos.each do |name, ins|
@@ -63,18 +63,18 @@ module Ruboty
               next
             end
             if stop_days >= period_notice
-              reply << "@#{ins[:owner]}: インスタンス[#{name}]は "
-              reply << "あと#{remain_days}日後にアーカイブします！\n"
+              reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]は "
+              reply_msg << "あと#{remain_days}日後にアーカイブします！\n"
             end
           end
-          reply << "  ↑不要であればアーカイブ前に削除してね！\n\n" if !reply.empty?
+          reply_msg << "  ↑不要であればアーカイブ前に削除してね！\n\n" if !reply_msg.empty?
           archive_list.each do |name, ins|
             ins_archive(name, ins)
-            reply << "@#{ins[:owner]}: インスタンス[#{name}]をアーカイブしたよ\n"
+            reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]をアーカイブしたよ\n"
           end
-          reply
+          message.reply(reply_msg)
         rescue => e
-          e.message
+          message.reply(e.message)
         end
 
         def ins_archive(ins_name, ins_info)
@@ -86,17 +86,19 @@ module Ruboty
           ami_id = ec2.create_ami(ins_id, ins_name)
 
           # タグ付け
-          params =  {"Name"  => ins_name, "Owner" => ins_info[:owner]}
-          params["IpAddr"]  = ins_info[:private_ip] if !ins_info[:private_ip].nil?
-          params["Spec"]    = ins_info[:spec]       if !ins_info[:spec].nil?
-          params["Desc"]    = ins_info[:desc]       if !ins_info[:desc].nil?
-          params["Param"]   = ins_info[:param]      if !ins_info[:param].nil?
+          params = {
+            "Name"     => ins_name,
+            "Owner"    => ins_info[:owner],
+            "ParentId" => ins_info[:parent_id],
+            "IpAddr"   => ins_info[:private_ip],
+            "Spec"     => ins_info[:spec],
+            "Desc"     => ins_info[:desc]
+          }
+          params["Param"] = ins_info[:param] if !ins_info[:param].nil?
           ec2.update_tags(ami_id, params)
 
           # インスタンス削除処理開始
           ec2.destroy_ins(ins_id)
-        rescue => e
-          e.message
         end
 
       end

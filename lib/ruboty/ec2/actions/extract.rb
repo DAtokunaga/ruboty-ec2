@@ -3,15 +3,15 @@ module Ruboty
     module Actions
       class Extract < Ruboty::Actions::Base
         def call
-          message.reply(extract)
+          extract
         end
 
         private
 
         def extract
-          "TODO: write your logic."
+          message.reply("TODO: write your logic.")
         rescue => e
-          e.message
+          message.reply(e.message)
         end
       end
     end

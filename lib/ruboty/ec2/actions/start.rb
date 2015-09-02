@@ -3,7 +3,7 @@ module Ruboty
     module Actions
       class Start < Ruboty::Actions::Base
         def call
-          message.reply(start)
+          start
         end
 
         private
@@ -21,8 +21,8 @@ module Ruboty
           ins_infos = ec2.get_ins_infos(ins_name)
           # 存在チェック
           if ins_infos.empty?
-            ami_infos = ec2.get_ami_infos(ins_name)
-            raise "インスタンス[#{ins_name}]は存在しないよー" if ami_infos.empty?
+            arc_infos = ec2.get_arc_infos(ins_name)
+            raise "インスタンス[#{ins_name}]は存在しないよー" if arc_infos.empty?
             raise "インスタンス[#{ins_name}]はアーカイブ済みだよ"
           end
 
@@ -46,10 +46,9 @@ module Ruboty
 
           # DNS設定
           r53.update_record_sets(ins_name, public_ip)
-          "DNS設定が完了したよ[#{ins_name}.#{util.get_domain} => #{public_ip}]"
-
+          message.reply("DNS設定が完了したよ[#{ins_name}.#{util.get_domain} => #{public_ip}]")
         rescue => e
-          e.message
+          message.reply(e.message)
         end
       end
     end
