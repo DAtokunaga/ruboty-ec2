@@ -47,6 +47,7 @@ module Ruboty
             # 整形(改行置換、プレースホルダ変換)
             tag_data  = target_info[tag.to_sym]
             tag_data.gsub!("\\n", "\n")
+            tag_data.gsub!("¥n", "\n")
             tag_data.gsub!("%%NAME%%", ins_name)
             tag_data.gsub!("%%FQDN%%", "#{ins_name}.#{util.get_domain}")
             reply_msg << "[#{tag.camelcase}]\n"

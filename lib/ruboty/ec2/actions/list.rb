@@ -25,7 +25,7 @@ module Ruboty
                                  ins[:parent_id], ins[:instance_type], ins[:owner])
           end
           if !reply_msg.empty?
-            message.reply(reply_msg, code: true)
+            message.reply(reply_msg.chomp, code: true)
           else
             message.reply("インスタンスはまだ１つもないよ")
           end
@@ -43,7 +43,7 @@ module Ruboty
                          ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], ami[:owner])
           end
           if !reply_msg.empty?
-            message.reply(reply_msg, code: true)
+            message.reply(reply_msg.chomp, code: true)
           else
             message.reply("アーカイブはまだ１つもないよ")
           end
@@ -63,7 +63,7 @@ module Ruboty
             ami_spec = "#{ami[:spec]} (default)" if ami[:image_id] == default_ami_id
             reply_msg << sprintf("[%s] %s\n", ami[:image_id], ami_spec)
           end
-          message.reply(reply_msg, code: true)
+          message.reply(reply_msg.chomp, code: true)
         rescue => e
           message.reply(e.message)
         end

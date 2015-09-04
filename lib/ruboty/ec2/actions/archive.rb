@@ -73,7 +73,7 @@ module Ruboty
             ins_archive(name, ins)
             reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]はアーカイブしたよ\n"
           end
-          message.reply(reply_msg) if !reply_msg.empty?
+          message.reply(reply_msg.chomp) if !reply_msg.empty?
         rescue => e
           message.reply(e.message)
         end
