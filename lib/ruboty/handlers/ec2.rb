@@ -42,7 +42,7 @@ module Ruboty
                                            name: 'list',      description: 'show list of instance, archive and AMI')
       on(/ec2 usage *(?<yyyymm>last|201\d{3}+)*\z/,
                                            name: 'usage',     description: 'show instance usage of specified month')
-      on(/ec2 edit (?<tag_name>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/,
+      on(/ec2 edit (?<tag_name>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/m,
                                            name: 'edit',      description: 'edit data of spec, desc and param')
 
       def create(message)
