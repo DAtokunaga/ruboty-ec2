@@ -30,11 +30,21 @@ module Ruboty
             cmd_name = cl[/`([^']*)'/, 1]
           end
           from_ch  = get_channel
-          ng_list  = ENV["RUBOTY_EC2_NOT_ALLOWED_CMD_#{from_ch}"] ||= ""
-          return if ng_list.empty?
-          ng_array = ng_list.split(",")
-          if ng_array.include?(cmd_name)
-            raise "コマンド#{ng_array}を実行する権限がないよ"
+          restrict_list  = ENV["RUBOTY_EC2_RESTRICT_CMD_#{from_ch}"] ||= ""
+          return if restrict_list.empty?
+          restrict_array = restrict_list.split(",")
+          restrict_hash  = {}
+          restrict_array.each do |rstrct|
+            _rstrct   = rstrct.split(":")
+            _cmd_name = _rstrct[0]
+            _rstrct.shift
+            restrict_hash[_cmd_name] = _rstrct
+          end
+          if restrict_hash.include?(cmd_name)
+            raise "コマンド#{cmd_name}を実行する権限がないよ" if restrict_hash[cmd_name].empty?
+            if !restrict_hash[cmd_name].include?(get_caller)
+              raise "コマンド#{cmd_name}は#{restrict_hash[cmd_name]}だけが実行できるよ. 頼んでみてね"
+            end
           end
         end
 
@@ -113,9 +123,9 @@ module Ruboty
   end
 end
 
-# AWSリソースのタグ名からハッシュのキー名に変換するためのスネークケース変換処理
+# AWSリソースのタグ名からハッシュのキー名の相互変換用Camel/Snakeケース変換処理
 class String
-  def snakecase()
+  def snakecase
     s = self
     words = []
     until ( md = s.match( /[A-Z][a-z]*/ ) ).nil?
@@ -123,6 +133,10 @@ class String
       s = md.post_match
     end
     words.collect { |word| word.downcase }.join( '_' )
+  end
+  def camelcase
+    return self if self !~ /_/ && self =~ /[A-Z]+.*/
+    split('_').map{|e| e.capitalize}.join
   end
 end
 

@@ -15,24 +15,22 @@ module Ruboty
 
         def archive
           # AWSアクセス、その他ユーティリティのインスタンス化
-          util = Ruboty::Ec2::Helpers::Util.new(message)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
 
           # チャットコマンド情報取得
           ins_name = message[:ins_name]
 
+          ## 事前チェック ##
+
           ## 現在利用中のインスタンス情報を取得
           ins_infos = ec2.get_ins_infos(ins_name)
           # 存在チェック
-          if ins_infos.empty?
-            arc_infos = ec2.get_arc_infos(ins_name)
-            raise "インスタンス[#{ins_name}]は存在しないよー" if arc_infos.empty?
-            raise "インスタンス[#{ins_name}]はアーカイブ済みだよ"
-          end
-
+          raise "インスタンス[#{ins_name}]が見つからないよ" if ins_infos.empty?
           # ステータス[停止]チェック
           ins_info = ins_infos[ins_name]
-          raise "アーカイブ前にインスタンス[#{ins_name}]を停止してね" if ins_info[:state] != "stopped"
+          raise "インスタンス[#{ins_name}]を先に停止プリーズ" if ins_info[:state] != "stopped"
+
+          ## メイン処理 ##
 
           # アーカイブ処理実行
           ins_archive(ins_name, ins_info)
@@ -46,9 +44,12 @@ module Ruboty
           util = Ruboty::Ec2::Helpers::Util.new(message)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
 
+          # 警告を出すまでに日数、アーカイブ猶予期間の定義値取得
           period_archive = Ruboty::Ec2::Const::PeriodToArchive
           period_notice  = Ruboty::Ec2::Const::PeriodToArchiveNotice
           remain_days    = period_archive - period_notice
+
+          ## メイン処理 ##
 
           ## 現在利用中のインスタンス情報を取得
           reply_msg = ""
@@ -70,13 +71,14 @@ module Ruboty
           reply_msg << "  ↑不要であればアーカイブ前に削除してね！\n\n" if !reply_msg.empty?
           archive_list.each do |name, ins|
             ins_archive(name, ins)
-            reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]をアーカイブしたよ\n"
+            reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]はアーカイブしたよ\n"
           end
-          message.reply(reply_msg)
+          message.reply(reply_msg) if !reply_msg.empty?
         rescue => e
           message.reply(e.message)
         end
 
+        # アーカイブメソッド 
         def ins_archive(ins_name, ins_info)
           # AWSアクセス、その他ユーティリティのインスタンス化
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
@@ -94,8 +96,10 @@ module Ruboty
             "Spec"     => ins_info[:spec],
             "Desc"     => ins_info[:desc]
           }
-          params["Param"] = ins_info[:param] if !ins_info[:param].nil?
-          ec2.update_tags(ami_id, params)
+          params["Param"]      = ins_info[:param] if !ins_info[:param].nil?
+          params["AutoStart"]  = ins_info[:auto_start] if !ins_info[:auto_start].nil?
+          params["ExceptStop"] = ins_info[:except_stop] if !ins_info[:except_stop].nil?
+          ec2.update_tags([ami_id], params)
 
           # インスタンス削除処理開始
           ec2.destroy_ins(ins_id)

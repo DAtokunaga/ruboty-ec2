@@ -12,14 +12,15 @@ module Ruboty
           # AWSアクセス、その他ユーティリティのインスタンス化
           util = Ruboty::Ec2::Helpers::Util.new(message)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
-          r53  = Ruboty::Ec2::Helpers::Route53.new(message)
 
           # チャットコマンド情報取得
           ins_name = message[:ins_name]
-          ami_id   = message[:ami_id]
+          ami_id   = (message[:ami_id].nil? ? util.get_default_ami : message[:ami_id])
           caller   = util.get_caller
 
-          # 入力チェック
+          ## 事前チェック ##
+
+          # インスタンス名チェック
           if !ins_name.match(/^[a-z0-9\-]+$/) or ins_name.length > 15
             warn_msg =  "インスタンス名は↓このルールで指定してね\n"
             warn_msg << "```\n"
@@ -35,21 +36,13 @@ module Ruboty
           ami_infos = ec2.get_ami_infos
 
           ## 使用するAMI IDを取得し存在チェック
-          if ami_id.nil?
-            ami_id = util.get_default_ami
-          end
-          exist_flg = false
-          ami_infos.each do |id, ami|
-            if ami[:image_id] == ami_id
-              exist_flg = true
-            end
-          end
-          raise "AMI ID[#{ami_id}]が間違っているよ" if !exist_flg
+          raise "AMI ID[#{ami_id}]が間違っているよ" if !ami_infos.include?(ami_id)
 
           ## インスタンス名重複チェック
-          ins_infos.each do |name, ins|
-            raise "インスタンス名[#{name}]がかぶってるよー" if ins_name == name
-          end
+          raise "インスタンス[#{ins_name}]は既にあるよ" if ins_infos.include?(ins_name)
+          raise "インスタンス[#{ins_name}]は既にアーカイブされてるよ" if arc_infos.include?(ins_name)
+
+          ## メイン処理 ##
 
           # 使用するIPアドレスを取得
           subnet_id    = util.get_subnet_id
@@ -64,8 +57,13 @@ module Ruboty
           # 使用可能なIPをランダムに払い出す
           private_ip = (ipaddr_range - ipaddr_used).sample
 
+          # 作成するインスタンスタイプ判定（HVM or PVにより変わります）
+          ins_type = (ami_infos[ami_id][:virtual_type] == "hvm" ?
+                      Ruboty::Ec2::Const::InsTypeHVM :
+                      Ruboty::Ec2::Const::InsTypePV)
+
           # インスタンス作成
-          params = {:image_id => ami_id, :private_ip_address => private_ip}
+          params = {:image_id => ami_id, :private_ip_address => private_ip, :instance_type => ins_type}
           ins_id = ec2.create_ins(params)
           # タグ付け
           params =  {"Name"  => ins_name, "Owner" => caller,
@@ -73,7 +71,7 @@ module Ruboty
           params["Spec"]  = ami_infos[ami_id][:spec]  if !ami_infos[ami_id][:spec].nil?
           params["Desc"]  = ami_infos[ami_id][:desc]  if !ami_infos[ami_id][:desc].nil?
           params["Param"] = ami_infos[ami_id][:param] if !ami_infos[ami_id][:param].nil?
-          ec2.update_tags(ins_id, params)
+          ec2.update_tags([ins_id], params)
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
           message.reply("インスタンス[#{ins_name}]を作成したよ. DNS設定完了までもう少し待っててね")
@@ -82,7 +80,8 @@ module Ruboty
           public_ip = ec2.wait_for_associate_public_ip(ins_name)
 
           # DNS設定
-          r53.update_record_sets(ins_name, public_ip)
+          r53 = Ruboty::Ec2::Helpers::Route53.new(message)
+          r53.update_record_sets({ins_name => public_ip})
           message.reply("DNS設定が完了したよ[#{ins_name}.#{util.get_domain} => #{public_ip}]")
         rescue => e
           message.reply(e.message)

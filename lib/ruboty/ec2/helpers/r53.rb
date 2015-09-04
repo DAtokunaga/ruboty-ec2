@@ -43,49 +43,59 @@ module Ruboty
           rset_infos
         end
 
-        def update_record_sets(ins_name, public_ip)
+        def update_record_sets(upd_infos)
+          record_sets = []
+          upd_infos.each do |ins_name, public_ip|
+            record_sets << {
+              :action     => "UPSERT",
+              :resource_record_set => {
+                :name     => "#{ins_name}.#{@domain}",
+                :type     => "A",
+                :ttl      => 60,
+                :resource_records => [{
+                  :value  => public_ip
+                }]
+              }
+            }
+          end
           params = {
             :hosted_zone_id => @zone_id,
             :change_batch   => {
-              :comment      => "for ins_name",
-              :changes      => [{
-                :action     => "UPSERT",
-                :resource_record_set => {
-                  :name     => "#{ins_name}.#{@domain}",
-                  :type     => "A",
-                  :ttl      => 60,
-                  :resource_records => [{
-                    :value  => public_ip
-                  }]
-                }
-              }]
+              :comment      => "for sakutto instance",
+              :changes      => record_sets
             } 
           }
           @r53.change_resource_record_sets(params)
         end
 
-        def delete_record_sets(ins_name, public_ip)
+        def delete_record_sets(del_infos)
           # check exist fqdn
           params = {
-            :hosted_zone_id => @zone_id,
-            :start_record_name => "#{ins_name}.#{@domain}",
-            :start_record_type => "A"
+            :hosted_zone_id => @zone_id
           }
+          record_sets = []
           resp = @r53.list_resource_record_sets(params)
-          return if resp.resource_record_sets.size == 0
+          resp.resource_record_sets.each do |rset|
+            next if rset.type != "A"
+            ins_name = rset.name.gsub(/\..*/, '')
+            next if !del_infos.include?(ins_name)
+            next if del_infos[ins_name].nil?
+            record_sets << {
+              :action     => "DELETE",
+              :resource_record_set => {
+                :name     => "#{ins_name}.#{@domain}",
+                :type     => "A",
+                :ttl      => 60,
+                :resource_records => [{:value => del_infos[ins_name]}]
+              }
+            }
+          end
+          return if record_sets.empty?
           # delete record set
           params = {
             :hosted_zone_id => @zone_id,
             :change_batch   => {
-              :changes      => [{
-                :action     => "DELETE",
-                :resource_record_set => {
-                  :name     => "#{ins_name}.#{@domain}",
-                  :type     => "A",
-                  :ttl      => 60,
-                  :resource_records => [{:value => public_ip}]
-                }
-              }]
+              :changes      => record_sets
             }
           }
           @r53.change_resource_record_sets(params)

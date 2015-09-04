@@ -14,14 +14,15 @@ require "ruboty/ec2/actions/detail"
 require "ruboty/ec2/actions/autostart"
 require "ruboty/ec2/actions/autostop"
 require "ruboty/ec2/actions/copy"
+require "ruboty/ec2/actions/usage"
 
 module Ruboty
   module Handlers
     class Ec2 < Base
       # 自動起動／停止系
-      on(/ec2 autostart (?<cmd>exec|list|add|del) +(?<ins_name>\S+)\z/,
+      on(/ec2 autostart (?<cmd>exec|list|add|del) *(?<ins_name>\S+)*\z/,
                                            name: 'autostart', description: 'manage auto-start instances')
-      on(/ec2 autostop (?<cmd>exec|list|add|del) +(?<ins_name>\S+)\z/,
+      on(/ec2 autostop (?<cmd>exec|list|add|del) *(?<ins_name>\S+)*\z/,
                                            name: 'autostop',  description: 'manage auto-stop instances')
 
       # インスタンス操作系
@@ -36,9 +37,12 @@ module Ruboty
                                            name: 'copy',      description: 'copy instance'
 
       # インスタンスメタ情報管理系
-      on /ec2 list *(?<resource>\S+)*\z/,  name: 'list',      description: 'show list of instance, archive and AMI'
-      on /ec2 detail (?<ins_name>\S+)\z/,  name: 'detail',    description: 'show instance description'
-      on(/ec2 edit (?<tag>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/,
+      on /ec2 detail (?<ins_name>\S+)\z/,  name: 'detail',    description: 'show instance detail information'
+      on(/ec2 list *(?<resource>instance|archive|ami)*\z/,
+                                           name: 'list',      description: 'show list of instance, archive and AMI')
+      on(/ec2 usage *(?<yyyymm>last|201\d{3}+)*\z/,
+                                           name: 'usage',     description: 'show instance usage of specified month')
+      on(/ec2 edit (?<tag_name>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/,
                                            name: 'edit',      description: 'edit data of spec, desc and param')
 
       def create(message)
@@ -87,6 +91,10 @@ module Ruboty
 
       def copy(message)
         Ruboty::Ec2::Actions::Copy.new(message).call
+      end
+
+      def usage(message)
+        Ruboty::Ec2::Actions::Usage.new(message).call
       end
     end
   end

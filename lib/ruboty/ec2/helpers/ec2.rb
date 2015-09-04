@@ -41,6 +41,7 @@ module Ruboty
               ins_info[:key_name]      = ins.key_name
               ins_info[:instance_type] = ins.instance_type
               ins_info[:launch_time]   = ins.launch_time
+              ins_info[:virtual_type]  = ins.virtualization_type
               ins_info[:subnet_id]     = ins.subnet_id
               ins_info[:state]         = ins.state.name
               ins_info[:state_mark]    = @util.get_state_mark(ins.state.name)
@@ -76,11 +77,13 @@ module Ruboty
             # Owner, IpAddrタグありをArchive対象とする
             next if ami_info[:owner].nil?   or ami_info[:owner].empty?
             next if ami_info[:ip_addr].nil? or ami_info[:ip_addr].empty?
-            ami_info[:image_id] = ami.image_id
-            ami_info[:ami_name] = ami.name
-            ami_info[:state]    = ami.state
-            name = ami_info[:name] ? ami_info[:name] : ami_info[:ami_name]
-            ami_infos[name] = ami_info
+            ami_info[:image_id]     = ami.image_id
+            ami_info[:virtual_type] = ami.virtualization_type
+            ami_info[:snapshot_id]  = ami.block_device_mappings.first.ebs.snapshot_id
+            ami_info[:ami_name]     = ami.name
+            ami_info[:state]        = ami.state
+            name                    = ami_info[:name] ? ami_info[:name] : ami_info[:ami_name]
+            ami_infos[name]         = ami_info
           end
           ami_infos
         end
@@ -102,10 +105,12 @@ module Ruboty
             next if !ami_info[:ip_addr].nil? and !ami_info[:ip_addr].empty?
             next if ami_info[:desc].nil?     or  ami_info[:desc].empty?
             next if ami_info[:spec].nil?     or  ami_info[:spec].empty?
-            ami_info[:image_id] = ami_id
-            ami_info[:name]     = ami.name
-            ami_info[:state]    = ami.state
-            ami_infos[ami_id]   = ami_info
+            ami_info[:image_id]     = ami_id
+            ami_info[:virtual_type] = ami.virtualization_type
+            ami_info[:snapshot_id]  = ami.block_device_mappings.first.ebs.snapshot_id
+            ami_info[:name]         = ami.name
+            ami_info[:state]        = ami.state
+            ami_infos[ami_id]        = ami_info
           end
           ami_infos
         end
@@ -115,7 +120,7 @@ module Ruboty
             :image_id => _params[:image_id],
             :min_count => 1, :max_count => 1,
             :key_name => Ruboty::Ec2::Const::KeyName,
-            :instance_type => Ruboty::Ec2::Const::InsType,
+            :instance_type => _params[:instance_type],
             :block_device_mappings => [{
               :device_name => "/dev/sda1",
               :ebs => {:volume_type => Ruboty::Ec2::Const::VolType}
@@ -134,13 +139,13 @@ module Ruboty
           ins_id = ins[:instance_id]
         end
 
-        def stop_ins(ins_id)
-          params = {:instance_ids => [ins_id]}
+        def stop_ins(ins_ids)
+          params = {:instance_ids => ins_ids}
           @ec2.stop_instances(params)
         end
 
-        def start_ins(ins_id)
-          params = {:instance_ids => [ins_id]}
+        def start_ins(ins_ids)
+          params = {:instance_ids => ins_ids}
           @ec2.start_instances(params)
         end
 
@@ -149,12 +154,20 @@ module Ruboty
           @ec2.terminate_instances(params)
         end
 
-        def update_tags(ins_id, tag_hash)
-          params = {:resources => [ins_id], :tags => []}
+        def update_tags(ins_ids, tag_hash)
+          params = {:resources => ins_ids, :tags => []}
           tag_hash.each do |key,val|
             params[:tags] << {:key => key, :value => val}
           end
           @ec2.create_tags(params)
+        end
+
+        def delete_tags(ins_ids, tag_keys)
+          params = {:resources => ins_ids, :tags => []}
+          tag_keys.each do |key|
+            params[:tags] << {:key => key}
+          end
+          @ec2.delete_tags(params)
         end
 
         def wait_for_associate_public_ip(ins_name)
@@ -170,11 +183,35 @@ module Ruboty
           public_ip
         end
 
+        def wait_for_associate_multi_public_ip(ins_names)
+          started_at = Time.now
+          ins_count = ins_names.size
+          ins_pip_hash = {}
+          while ins_count != ins_pip_hash.size do
+            sleep(1)
+            ins_infos = get_ins_infos
+            ins_infos.each do |name, ins|
+              next if !ins_names.include?(name)
+              ins_pip_hash[name] = ins[:public_ip] if !ins[:public_ip].nil?
+            end
+            break if (Time.now - started_at).to_i > 60
+          end
+          if ins_count != ins_pip_hash.size
+            raise "インスタンス#{ins_names-ins_pip_hash.keys}が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ"
+          end
+          ins_pip_hash
+        end
+
         def create_ami(ins_id, ins_name)
           ami_name = "#{ins_name}_#{Time.now.strftime('%Y%m%d%H%M%S')}"
           params   = {:instance_id => ins_id, :name => ami_name}
           ami      = @ec2.create_image(params)
           ami_id   = ami[:image_id]
+        end
+
+        def destroy_ami(arc_id, snapshot_id)
+          @ec2.deregister_image(image_id: arc_id)
+          @ec2.delete_snapshot(snapshot_id: snapshot_id)
         end
 
       end
