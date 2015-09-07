@@ -20,7 +20,7 @@ module Ruboty
           ins_infos = ec2.get_ins_infos
           reply_msg = ""
           ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ins|
-            reply_msg << sprintf("[%s] %-15s / %s / %s / %-9s / %s\n",
+            reply_msg << sprintf("[%s] %-15s / %s / %12s / %-9s / %s\n",
                                  ins[:state_mark], name, ins[:instance_id],
                                  ins[:parent_id], ins[:instance_type], ins[:owner])
           end
@@ -39,7 +39,7 @@ module Ruboty
 
           reply_msg = ""
           arc_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
-            reply_msg << sprintf("[%7s] %-15s / %s / %-15s / %s\n",
+            reply_msg << sprintf("[%9s] %-15s / %12s / %-15s / %s\n",
                          ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], ami[:owner])
           end
           if !reply_msg.empty?
@@ -61,7 +61,7 @@ module Ruboty
           ami_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
             ami_spec = ami[:spec]
             ami_spec = "#{ami[:spec]} (default)" if ami[:image_id] == default_ami_id
-            reply_msg << sprintf("[%s] %s\n", ami[:image_id], ami_spec)
+            reply_msg << sprintf("%s / %s\n", ami[:image_id], ami_spec)
           end
           message.reply(reply_msg.chomp, code: true)
         rescue => e

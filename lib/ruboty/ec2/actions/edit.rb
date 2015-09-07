@@ -16,7 +16,7 @@ module Ruboty
           ins_name = message[:ins_name]
           tag_name = message[:tag_name]
           tag_key  = tag_name.camelcase
-          new_data = message[:data]
+          new_data = message[:data].gsub("\n", "¥n")
 
           ## 事前チェック ##
 
@@ -51,8 +51,10 @@ module Ruboty
           params  = {tag_key => new_data}
           ec2.update_tags([resource_id], params)
 
-          # 整形(改行置換、プレースホルダ変換)
-          formatted_data = new_data.gsub("\\n", "\n")
+          # 整形(改行置換）
+          new_data!.gsub("\\n", "\n")
+          new_data!.gsub("¥n", "\n")
+          formatted_data = new_data
 
           reply_msg  = "#{tag_key}タグを編集したよ\n"
           reply_msg << "Before(no format for revert):\n"
