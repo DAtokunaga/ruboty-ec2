@@ -52,8 +52,8 @@ module Ruboty
           ec2.update_tags([resource_id], params)
 
           # 整形(改行置換）
-          new_data!.gsub("\\n", "\n")
-          new_data!.gsub("¥n", "\n")
+          new_data.gsub!("\\n", "\n")
+          new_data.gsub!("¥n", "\n")
           formatted_data = new_data
 
           reply_msg  = "#{tag_key}タグを編集したよ\n"

@@ -151,11 +151,18 @@ module Ruboty
         end
 
         def update_tags(ins_ids, tag_hash)
+          # リトライ回数
+          cnt_retry = 0
+
           params = {:resources => ins_ids, :tags => []}
           tag_hash.each do |key,val|
             params[:tags] << {:key => key, :value => val}
           end
           @ec2.create_tags(params)
+        rescue
+          cnt_retry += 1
+          # 3 times retry
+          retry if cnt_retry < 4
         end
 
         def delete_tags(ins_ids, tag_keys)

@@ -74,7 +74,7 @@ module Ruboty
           ec2.update_tags([ins_id], params)
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
-          message.reply("インスタンス[#{to_ins_name}]として複製したよ. DNS設定完了までもう少し待っててね")
+          message.reply("インスタンス[#{to_ins_name}]としてコピーしたよ. DNS設定完了までもう少し待っててね")
 
           # パブリックIPを取得
           public_ip = ec2.wait_for_associate_public_ip(to_ins_name)
