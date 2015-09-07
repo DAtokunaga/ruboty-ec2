@@ -24,10 +24,7 @@ module Ruboty
         end
 
         def get_ins_infos(ins_name = nil)
-          filter_str = {:filters => [
-                           {:name => "tag-key",   :values => ["Name"]},
-                           {:name => "tag-value", :values => [ins_name]}
-                         ]}
+          filter_str = {:filters => [{:name => "tag:Name", :values => [ins_name]}]}
           params     = (ins_name ? filter_str : {})
           resp       = @ec2.describe_instances(params)
           ins_infos  = {}
@@ -62,8 +59,7 @@ module Ruboty
         def get_arc_infos(ins_name = nil)
           params    = {:filters => [{:name => "is-public", values: ["false"]}]}
           if !ins_name.nil?
-            params[:filters] << {:name => "tag-key",   :values => ["Name"]}
-            params[:filters] << {:name => "tag-value", :values => [ins_name]}
+            params[:filters] << {:name => "tag:Name", :values => [ins_name]}
           end
           resp      = @ec2.describe_images(params)
           ami_infos = {}
