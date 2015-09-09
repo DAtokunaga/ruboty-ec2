@@ -51,7 +51,7 @@ module Ruboty
           # 表示するタグ名を指定
           display_tags = ["spec", "desc", "param"]
           ins_or_arc = (target_info[:instance_id].nil? ? "アーカイブ" : "インスタンス")
-          ins_or_arc = "AMI" if target_info[:ami_name].nil?
+          ins_or_arc = "AMI" if ins_or_arc == "アーカイブ" and target_info[:ami_name].nil?
           reply_msg  = "#{ins_or_arc}[#{ins_name}]の詳細情報だよ\n"
           display_tags.each do |tag|
             next if target_info[tag.to_sym].nil? or target_info[tag.to_sym].empty?
