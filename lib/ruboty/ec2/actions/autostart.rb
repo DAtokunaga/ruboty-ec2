@@ -75,13 +75,14 @@ module Ruboty
             next if ins[:auto_start].nil? or ins[:auto_start].empty?
             start_ins_infos[name] = ins
           end
-          return if start_ins_infos.empty?
 
-          reply_msg = "自動起動対象のインスタンス一覧だよ\n"
+          msg_list  = ""
           start_ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2}.each do |name, ins|
-            reply_msg << sprintf("%-15s / %s\n", name, ins[:auto_start])
+            msg_list << sprintf("\n%-15s / %s", name, ins[:auto_start])
           end
-          message.reply(reply_msg, code: true)
+          reply_msg = "```\n自動起動対象のインスタンス一覧だよ#{msg_list}\n```"
+          reply_msg = "自動起動対象インスタンスはないよ" if msg_list.empty?
+          message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
         end

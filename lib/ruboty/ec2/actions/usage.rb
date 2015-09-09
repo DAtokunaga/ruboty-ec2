@@ -61,12 +61,13 @@ module Ruboty
             end
           end
 
-          reply_msg = "インスタンス別稼働時間を集計したよ！\n対象月[#{yyyymm}]\n"
+          reply_msg = "```\nインスタンス別稼働時間を集計したよ！\n対象月[#{yyyymm}]"
           brain_infos.sort {|(k1, v1), (k2, v2)| v2 <=> v1}.each do |name, uptime|
-            reply_msg << sprintf("%4d h => %s\n", uptime, name)
+            reply_msg << sprintf("\n%4d h => %s", uptime, name)
           end
+          reply_msg << "\n```"
           if !brain_infos.empty?
-            message.reply(reply_msg, code: true)
+            message.reply(reply_msg)
           else
             message.reply("対象月[#{yyyymm}]に稼働したインスタンスはないよ")
           end

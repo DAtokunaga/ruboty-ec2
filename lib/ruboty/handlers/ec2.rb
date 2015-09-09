@@ -37,9 +37,9 @@ module Ruboty
                                            name: 'copy',      description: 'copy instance'
 
       # インスタンスメタ情報管理系
-      on /ec2 detail (?<ins_name>\S+)\z/,  name: 'detail',    description: 'show instance detail information'
+      on /ec2 detail (?<ins_name>\S+)\z/,  name: 'detail',    description: 'show instance/archive/AMI detail information'
       on(/ec2 list *(?<resource>instance|archive|ami)*\z/,
-                                           name: 'list',      description: 'show list of instance, archive and AMI')
+                                           name: 'list',      description: 'show instance/archive/AMI list')
       on(/ec2 usage *(?<yyyymm>last|201\d{3}+)*\z/,
                                            name: 'usage',     description: 'show instance usage of specified month')
       on(/ec2 edit (?<tag_name>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/m,

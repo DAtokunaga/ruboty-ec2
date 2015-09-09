@@ -16,19 +16,16 @@ module Ruboty
 
         def instance_list
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
-
           ins_infos = ec2.get_ins_infos
-          reply_msg = ""
+          msg_list  = ""
           ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ins|
-            reply_msg << sprintf("[%s] %-15s / %s / %12s / %-9s / %s\n",
+            msg_list << sprintf("\n[%s] %-15s / %s / %12s / %-9s / %s",
                                  ins[:state_mark], name, ins[:instance_id],
                                  ins[:parent_id], ins[:instance_type], ins[:owner])
           end
-          if !reply_msg.empty?
-            message.reply(reply_msg.chomp, code: true)
-          else
-            message.reply("インスタンスはまだ１つもないよ")
-          end
+          reply_msg = "```#{msg_list}\n```"
+          reply_msg = "インスタンスはまだ１つもないよ" if msg_list.empty?
+          message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
         end
@@ -36,17 +33,14 @@ module Ruboty
         def archive_list
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           arc_infos = ec2.get_arc_infos
-
-          reply_msg = ""
+          msg_list  = ""
           arc_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
-            reply_msg << sprintf("[%9s] %-15s / %12s / %-15s / %s\n",
+            msg_list << sprintf("\n[%9s] %-15s / %12s / %-15s / %s",
                          ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], ami[:owner])
           end
-          if !reply_msg.empty?
-            message.reply(reply_msg.chomp, code: true)
-          else
-            message.reply("アーカイブはまだ１つもないよ")
-          end
+          reply_msg = "```#{msg_list}\n```"
+          reply_msg = "アーカイブはまだ１つもないよ" if msg_list.empty?
+          message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
         end
@@ -56,14 +50,15 @@ module Ruboty
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           default_ami_id = util.get_default_ami
           ami_infos = ec2.get_ami_infos
-
-          reply_msg = ""
+          msg_list  = ""
           ami_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
             ami_spec = ami[:spec]
             ami_spec = "#{ami[:spec]} (default)" if ami[:image_id] == default_ami_id
-            reply_msg << sprintf("%s / %s\n", ami[:image_id], ami_spec)
+            msg_list << sprintf("\n%s / %s", ami[:image_id], ami_spec)
           end
-          message.reply(reply_msg.chomp, code: true)
+          reply_msg = "```#{msg_list}\n```"
+          reply_msg = "AMIはまだ１つもないよ" if msg_list.empty?
+          message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
         end
