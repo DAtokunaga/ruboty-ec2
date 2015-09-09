@@ -25,7 +25,7 @@ module Ruboty
             warn_msg =  "インスタンス名は↓このルールで指定してね\n"
             warn_msg << "```\n"
             warn_msg << "  許容文字 -> 半角英数字(小文字)、及び-(半角ハイフン)\n"
-            warn_msg << "  文字列長 -> 15文字以内\n"
+            warn_msg << "  文字列長 -> 15文字以内"
             warn_msg << "```"
             raise warn_msg
           end

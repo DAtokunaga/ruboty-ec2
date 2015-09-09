@@ -65,7 +65,7 @@ module Ruboty
           brain_infos.sort {|(k1, v1), (k2, v2)| v2 <=> v1}.each do |name, uptime|
             reply_msg << sprintf("\n%4d h => %s", uptime, name)
           end
-          reply_msg << "\n```"
+          reply_msg << "```"
           if !brain_infos.empty?
             message.reply(reply_msg)
           else

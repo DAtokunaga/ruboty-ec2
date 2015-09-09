@@ -23,7 +23,7 @@ module Ruboty
                                  ins[:state_mark], name, ins[:instance_id],
                                  ins[:parent_id], ins[:instance_type], ins[:owner])
           end
-          reply_msg = "```#{msg_list}\n```"
+          reply_msg = "```#{msg_list}```"
           reply_msg = "インスタンスはまだ１つもないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
@@ -38,7 +38,7 @@ module Ruboty
             msg_list << sprintf("\n[%9s] %-15s / %12s / %-15s / %s",
                          ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], ami[:owner])
           end
-          reply_msg = "```#{msg_list}\n```"
+          reply_msg = "```#{msg_list}```"
           reply_msg = "アーカイブはまだ１つもないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
@@ -56,7 +56,7 @@ module Ruboty
             ami_spec = "#{ami[:spec]} (default)" if ami[:image_id] == default_ami_id
             msg_list << sprintf("\n%s / %s", ami[:image_id], ami_spec)
           end
-          reply_msg = "```#{msg_list}\n```"
+          reply_msg = "```#{msg_list}```"
           reply_msg = "AMIはまだ１つもないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
