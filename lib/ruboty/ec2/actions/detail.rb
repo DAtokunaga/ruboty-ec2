@@ -25,13 +25,23 @@ module Ruboty
           if ins_infos.empty?
             arc_infos = ec2.get_arc_infos(ins_name)
             # アーカイブ存在チェック
-            raise "インスタンス[#{ins_name}]が見つからないよ" if arc_infos.empty?
-            # ステータス[available]チェック
-            arc_info  = arc_infos[ins_name]
-            if !["pending", "available"].include?(arc_info[:state])
-              raise "アーカイブ[#{ins_name}]は今使えないっす..."
+            if arc_infos.empty?
+              raise "インスタンス[#{ins_name}]が見つからないよ" if ins_name.index("ami-").nil?
+              ami_infos = ec2.get_ami_infos
+              # AMI存在チェック
+              if ami_infos.include?(ins_name)
+                target_info = ami_infos[ins_name]
+              else
+                raise "インスタンス[#{ins_name}]が見つからないよ"
+              end
+            else
+              # ステータス[available]チェック
+              arc_info  = arc_infos[ins_name]
+              if !["pending", "available"].include?(arc_info[:state])
+                raise "アーカイブ[#{ins_name}]は今使えないっす..."
+              end
+              target_info = arc_info
             end
-            target_info = arc_info
           else
             target_info = ins_infos[ins_name]
           end
@@ -41,6 +51,7 @@ module Ruboty
           # 表示するタグ名を指定
           display_tags = ["spec", "desc", "param"]
           ins_or_arc = (target_info[:instance_id].nil? ? "アーカイブ" : "インスタンス")
+          ins_or_arc = "AMI" if target_info[:ami_name].nil?
           reply_msg  = "#{ins_or_arc}[#{ins_name}]の詳細情報だよ\n"
           display_tags.each do |tag|
             next if target_info[tag.to_sym].nil? or target_info[tag.to_sym].empty?
