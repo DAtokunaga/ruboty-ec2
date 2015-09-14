@@ -23,8 +23,9 @@ module Ruboty
                                  ins[:state_mark], name, ins[:instance_id],
                                  ins[:parent_id], ins[:instance_type], ins[:owner])
           end
-          reply_msg = "```#{msg_list}```"
-          reply_msg = "インスタンスはまだ１つもないよ" if msg_list.empty?
+          legend_str = "凡例．[\u{25B2}]->pending, [\u{25BA}]->running, [\u{25BC}]->shutting-down/stopping, [\u{25A0}]->stopped"
+          reply_msg  = "```#{legend_str}#{msg_list}```"
+          reply_msg  = "インスタンスはまだ１つもないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
