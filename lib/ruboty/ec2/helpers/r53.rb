@@ -52,8 +52,17 @@ module Ruboty
                 :name     => "#{ins_name}.#{@domain}",
                 :type     => "A",
                 :ttl      => 60,
+                :resource_records => [{:value  => public_ip}]
+              }
+            }
+            record_sets << {
+              :action     => "UPSERT",
+              :resource_record_set => {
+                :name     => "#{ins_name}.#{@domain}",
+                :type     => "MX",
+                :ttl      => 60,
                 :resource_records => [{
-                  :value  => public_ip
+                  :value  => "10 #{ins_name}.#{@domain}."
                 }]
               }
             }
@@ -87,6 +96,15 @@ module Ruboty
                 :type     => "A",
                 :ttl      => 60,
                 :resource_records => [{:value => del_infos[ins_name]}]
+              }
+            }
+            record_sets << {
+              :action     => "DELETE",
+              :resource_record_set => {
+                :name     => "#{ins_name}.#{@domain}",
+                :type     => "MX",
+                :ttl      => 60,
+                :resource_records => [{:value => "10 #{ins_name}.#{@domain}"}]
               }
             }
           end
