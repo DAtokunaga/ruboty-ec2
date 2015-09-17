@@ -10,7 +10,6 @@ module Ruboty
 
         def detail
           # AWSアクセス、その他ユーティリティのインスタンス化
-          util = Ruboty::Ec2::Helpers::Util.new(message)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
 
           # チャットコマンド情報取得
@@ -19,7 +18,6 @@ module Ruboty
           ## 事前チェック ##
 
           ## 現在利用中のインスタンス情報を取得
-          target_info = {}
           ins_infos = ec2.get_ins_infos(ins_name)
           # インスタンス存在チェック
           if ins_infos.empty?
@@ -29,44 +27,105 @@ module Ruboty
               raise "インスタンス[#{ins_name}]が見つからないよ" if ins_name.index("ami-").nil?
               ami_infos = ec2.get_ami_infos
               # AMI存在チェック
-              if ami_infos.include?(ins_name)
-                target_info = ami_infos[ins_name]
-              else
-                raise "インスタンス[#{ins_name}]が見つからないよ"
-              end
+              raise "インスタンス[#{ins_name}]が見つからないよ" if !ami_infos.include?(ins_name)
+              detail_ami(ami_infos[ins_name])
+              return
             else
               # ステータス[available]チェック
               arc_info  = arc_infos[ins_name]
-              if !["pending", "available"].include?(arc_info[:state])
-                raise "アーカイブ[#{ins_name}]は今使えないっす..."
-              end
-              target_info = arc_info
+              raise "アーカイブ[#{ins_name}]は今使えないっす..." if !["pending", "available"].include?(arc_info[:state])
+              detail_arc(arc_info)
             end
           else
-            target_info = ins_infos[ins_name]
+            detail_ins(ins_infos[ins_name])
           end
+        rescue => e
+          message.reply(e.message)
+        end
 
-          ## メイン処理 ##
-
-          # 表示するタグ名を指定
-          display_tags = ["spec", "desc", "param"]
-          ins_or_arc = (target_info[:instance_id].nil? ? "アーカイブ" : "インスタンス")
-          ins_or_arc = "AMI" if ins_or_arc == "アーカイブ" and target_info[:ami_name].nil?
-          reply_msg  = "#{ins_or_arc}[#{ins_name}]の詳細情報だよ\n"
-          display_tags.each do |tag|
-            next if target_info[tag.to_sym].nil? or target_info[tag.to_sym].empty?
+        # インスタンスの詳細情報を表示します
+        def detail_ins(ins_info)
+          domain     = Ruboty::Ec2::Helpers::Util.new(message).get_domain
+          ins_name   = ins_info[:name]
+          basic_keys = ["name", "state", "owner", "instance_type", "private_ip", "public_ip"]
+          added_keys = ["spec", "desc", "param"]
+          reply_msg  = "インスタンス[#{ins_name}]の情報だよ\n"
+          reply_msg << "■基本情報\n```"
+          basic_keys.each do |key|
+            next if ins_info[key.to_sym].nil? or ins_info[key.to_sym].empty?
+            reply_msg << sprintf("\n%-12s : %s", key.camelcase, ins_info[key.to_sym])
+            if key == "state" and !ins_info[:last_used_time].nil?
+              start_or_stop = ins_info[key.to_sym] == "running" ? "started" : "stopped"
+              reply_msg << sprintf("  (%s at %s)", start_or_stop, ins_info[:last_used_time])
+            end
+          end
+          reply_msg << "\n```\n■付加情報\n```"
+          added_keys.each do |key|
+            next if ins_info[key.to_sym].nil? or ins_info[key.to_sym].empty?
             # 整形(改行置換、プレースホルダ変換)
-            tag_data  = target_info[tag.to_sym]
+            tag_data  = ins_info[key.to_sym]
             tag_data.gsub!("\\n", "\n")
             tag_data.gsub!("¥n", "\n")
             tag_data.gsub!("&&NAME&&", ins_name)
-            tag_data.gsub!("&&FQDN&&", "#{ins_name}.#{util.get_domain}")
-            reply_msg << "[#{tag.camelcase}]\n"
-            reply_msg << "```#{tag_data}```\n"
+            tag_data.gsub!("&&FQDN&&", "#{ins_name}.#{domain}")
+            reply_msg << "\n[#{key.camelcase}]"
+            reply_msg << "\n#{tag_data}"
           end
+          reply_msg << "```"
           message.reply(reply_msg)
-        rescue => e
-          message.reply(e.message)
+        end
+
+        # アーカイブの詳細情報を表示します
+        def detail_arc(arc_info)
+          domain     = Ruboty::Ec2::Helpers::Util.new(message).get_domain
+          ins_name   = arc_info[:name]
+          basic_keys = ["name", "state", "owner", "parent_id", "ip_addr", "ami_name"]
+          added_keys = ["spec", "desc", "param"]
+          reply_msg  = "アーカイブ[#{ins_name}]の情報だよ\n"
+          reply_msg << "■基本情報\n```"
+          basic_keys.each do |key|
+            next if arc_info[key.to_sym].nil? or arc_info[key.to_sym].empty?
+            reply_msg << sprintf("\n%-12s : %s", key.camelcase, arc_info[key.to_sym])
+          end
+          reply_msg << "\n```\n■付加情報\n```"
+          added_keys.each do |key|
+            next if arc_info[key.to_sym].nil? or arc_info[key.to_sym].empty?
+            # 整形(改行置換、プレースホルダ変換)
+            tag_data  = arc_info[key.to_sym]
+            tag_data.gsub!("\\n", "\n")
+            tag_data.gsub!("¥n", "\n")
+            tag_data.gsub!("&&NAME&&", ins_name)
+            tag_data.gsub!("&&FQDN&&", "#{ins_name}.#{domain}")
+            reply_msg << "\n[#{key.camelcase}]"
+            reply_msg << "\n#{tag_data}"
+          end
+          reply_msg << "```"
+          message.reply(reply_msg)
+        end
+
+        # AMIの詳細情報を表示します
+        def detail_ami(ami_info)
+          ami_id     = ami_info[:image_id]
+          basic_keys = ["image_id", "name", "state"]
+          added_keys = ["spec", "desc", "param"]
+          reply_msg  = "AMI[#{ami_id}]の情報だよ\n"
+          reply_msg << "■基本情報\n```"
+          basic_keys.each do |key|
+            next if ami_info[key.to_sym].nil? or ami_info[key.to_sym].empty?
+            reply_msg << sprintf("\n%-12s : %s", key.camelcase, ami_info[key.to_sym])
+          end
+          reply_msg << "\n```\n■付加情報\n```"
+          added_keys.each do |key|
+            next if ami_info[key.to_sym].nil? or ami_info[key.to_sym].empty?
+            # 整形(改行置換、プレースホルダ変換)
+            tag_data  = ami_info[key.to_sym]
+            tag_data.gsub!("\\n", "\n")
+            tag_data.gsub!("¥n", "\n")
+            reply_msg << "\n[#{key.camelcase}]"
+            reply_msg << "\n#{tag_data}"
+          end
+          reply_msg << "```"
+          message.reply(reply_msg)
         end
       end
     end
