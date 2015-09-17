@@ -19,12 +19,14 @@ module Ruboty
           ins_infos = ec2.get_ins_infos
           msg_list  = ""
           ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ins|
-            msg_list << sprintf("\n[%s] %-15s / %s / %12s / %-9s / %s",
-                                 ins[:state_mark], name, ins[:instance_id],
+            msg_list << sprintf("\n[%s] %-15s | %-14s | %-14s | %12s | %-9s | %s",
+                                 ins[:state_mark], name, ins[:private_ip], ins[:public_ip],
                                  ins[:parent_id], ins[:instance_type], ins[:owner])
           end
-          legend_str = "凡例．[\u{25B2}]->pending, [\u{25BA}]->running, [\u{25BC}]->shutting-down/stopping, [\u{25A0}]->stopped"
-          reply_msg  = "```#{legend_str}#{msg_list}```"
+          header_str = "↓凡例．[\u{25B2}]->pending, [\u{25BA}]->running, [\u{25BC}]->shutting-down/stopping, [\u{25A0}]->stopped\n"
+          header_str << sprintf("[-] %-15s | %-14s | %-14s | %-12s | %-9s | %s",
+                                "- InsName -----", "- PrivateIp --", "- PublicIp ---", "- UsingAMI -", "- Type --", "- Owner -")
+          reply_msg  = "```#{header_str}#{msg_list}```"
           reply_msg  = "インスタンスはまだ１つもないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
