@@ -31,7 +31,6 @@ module Ruboty
           end
           return if stop_ins_infos.empty?
 
-# TODO: 本格運用時にコメントを解除
           # 停止前にPublicIP取得
           ins_pip_hash = {}
           stop_ins_infos.each do |name, ins|
@@ -39,35 +38,34 @@ module Ruboty
           end
 
           # インスタンス停止
-#          stop_ins_ids = []
-#          stop_ins_infos.each do |name, ins|
-#            stop_ins_ids << ins[:instance_id]
-#          end
-#          ec2.stop_ins(stop_ins_ids)
+          stop_ins_ids = []
+          stop_ins_infos.each do |name, ins|
+            stop_ins_ids << ins[:instance_id]
+          end
+          ec2.stop_ins(stop_ins_ids)
 
           # 稼働時間を記録
-#          brain = Ruboty::Ec2::Helpers::Brain.new(message)
-#          stop_ins_infos.each do |name, ins|
-#            last_used_time = ins[:last_used_time]
-#            next if last_used_time.nil? or last_used_time.empty?
+          brain = Ruboty::Ec2::Helpers::Brain.new(message)
+          stop_ins_infos.each do |name, ins|
+            last_used_time = ins[:last_used_time]
+            next if last_used_time.nil? or last_used_time.empty?
             # LastUsedTimeから現在までの課金対象時間を算出
-#            uptime = util.get_time_diff(last_used_time)
+            uptime = util.get_time_diff(last_used_time)
             # Redis上の月別稼働時間累積値を更新
-#            brain.save_ins_uptime(name, uptime)
-#          end
+            brain.save_ins_uptime(name, uptime)
+          end
 
           # タグ付け
-#          params =  {"LastUsedTime" => Time.now.to_s}
-#          ec2.update_tags(stop_ins_ids, params)
+          params =  {"LastUsedTime" => Time.now.to_s}
+          ec2.update_tags(stop_ins_ids, params)
 
-          reply_msg  = "自動停止はコメントアウト中。対象インスタンスは#{stop_ins_infos.keys}です."
-#          reply_msg  = "自動停止対象インスタンス#{stop_ins_infos.keys}を停止したよ."
+          reply_msg  = "自動停止対象インスタンス#{stop_ins_infos.keys}を停止したよ."
           message.reply(reply_msg)
 
           # DNS設定
-#          r53 = Ruboty::Ec2::Helpers::Route53.new(message)
-#          r53.delete_record_sets(ins_pip_hash)
-#          message.reply("DNS設定を削除したよ")
+          r53 = Ruboty::Ec2::Helpers::Route53.new(message)
+          r53.delete_record_sets(ins_pip_hash)
+          message.reply("DNS設定を削除したよ")
         rescue => e
           message.reply(e.message)
         end

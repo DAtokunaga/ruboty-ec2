@@ -31,30 +31,28 @@ module Ruboty
           end
           return if start_ins_infos.empty?
 
-# TODO: 本格運用時にコメントを解除
           # インスタンス起動
-#          start_ins_ids = []
-#          start_ins_infos.each do |name, ins|
-#            start_ins_ids << ins[:instance_id]
-#          end
-#          ec2.start_ins(start_ins_ids)
+          start_ins_ids = []
+          start_ins_infos.each do |name, ins|
+            start_ins_ids << ins[:instance_id]
+          end
+          ec2.start_ins(start_ins_ids)
 
           # タグ付け
-#          params =  {"LastUsedTime" => Time.now.to_s}
-#          ec2.update_tags(start_ins_ids, params)
+          params =  {"LastUsedTime" => Time.now.to_s}
+          ec2.update_tags(start_ins_ids, params)
 
-          reply_msg  = "自動起動はコメントアウト中。対象インスタンスは#{start_ins_infos.keys}です."
-#          reply_msg  = "自動起動対象インスタンス#{start_ins_infos.keys}を起動したよ."
-#          reply_msg << "DNS設定完了までもう少し待っててね"
+          reply_msg  = "自動起動対象インスタンス#{start_ins_infos.keys}を起動したよ."
+          reply_msg << "DNS設定完了までもう少し待っててね"
           message.reply(reply_msg)
 
           # パブリックIPを取得
-#          ins_pip_hash = ec2.wait_for_associate_multi_public_ip(start_ins_infos.keys)
+          ins_pip_hash = ec2.wait_for_associate_multi_public_ip(start_ins_infos.keys)
 
           # DNS設定
-#          r53 = Ruboty::Ec2::Helpers::Route53.new(message)
-#          r53.update_record_sets(ins_pip_hash)
-#          message.reply("DNS設定が完了したよ")
+          r53 = Ruboty::Ec2::Helpers::Route53.new(message)
+          r53.update_record_sets(ins_pip_hash)
+          message.reply("DNS設定が完了したよ")
         rescue => e
           message.reply(e.message)
         end
