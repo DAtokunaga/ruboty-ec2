@@ -65,10 +65,13 @@ module Ruboty
             end
             if stop_days >= period_notice and stop_days < (period_notice + 1)
               reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]は "
-              reply_msg << "あと#{remain_days}日後にアーカイブします！\n"
+              reply_msg << "あと#{remain_days}日後にアーカイブしちゃうよ！\n"
             end
           end
-          reply_msg << "  ↑不要であればアーカイブ前に削除してね！\n\n" if !reply_msg.empty?
+          if !reply_msg.empty?
+            reply_msg << "  ↑不要であればアーカイブ前に削除してね！\n"
+            reply_msg << "   一度起動するとアーカイブを延期できるよ！\n\n"
+          end
           archive_list.each do |name, ins|
             ins_archive(name, ins)
             reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]をアーカイブしたよ\n"
