@@ -55,6 +55,7 @@ module Ruboty
           new_data.gsub!("\\n", "\n")
           new_data.gsub!("¥n", "\n")
           formatted_data = new_data
+          old_data       = " " if old_data.nil? or old_data.empty?
 
           reply_msg  = "#{tag_key}タグを編集したよ\n"
           reply_msg << "Before(no format for revert):\n"
