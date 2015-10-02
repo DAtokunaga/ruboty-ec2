@@ -91,7 +91,7 @@ module Ruboty
           except_stop_ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2}.each do |name, ins|
             msg_list << sprintf("\n%-15s | %s", name, ins[:except_stop])
           end
-          reply_msg = "```自動停止対象外のインスタンス一覧だよ#{msg_list}```"
+          reply_msg = "自動停止対象外のインスタンス一覧だよ\n```#{msg_list}```"
           reply_msg = "自動停止対象外インスタンスはないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
