@@ -56,7 +56,7 @@ module Ruboty
           default_ami_id = util.get_default_ami
           ami_infos = ec2.get_ami_infos
           msg_list  = ""
-          ami_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
+          ami_infos.sort {|(k1, v1), (k2, v2)| v1[:spec] <=> v2[:spec] }.each do |name, ami|
             ami_spec = ami[:spec]
             ami_spec = "#{ami[:spec]} (default)" if ami[:image_id] == default_ami_id
             msg_list << sprintf("\n%s | %s", ami[:image_id], ami_spec)
