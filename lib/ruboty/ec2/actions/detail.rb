@@ -47,7 +47,7 @@ module Ruboty
         def detail_ins(ins_info)
           domain     = Ruboty::Ec2::Helpers::Util.new(message).get_domain
           ins_name   = ins_info[:name]
-          basic_keys = ["name", "state", "owner", "instance_type", "private_ip", "public_ip"]
+          basic_keys = ["name", "state", "owner", "instance_type", "parent_id", "private_ip", "public_ip"]
           added_keys = ["spec", "desc", "param"]
           reply_msg  = "インスタンス[#{ins_name}]の情報だよ\n"
           reply_msg << "■基本情報\n```"
