@@ -45,6 +45,10 @@ module Ruboty
             uptime = util.get_time_diff(last_used_time)
             # Redis上の月別稼働時間累積値を更新
             brain.save_ins_uptime(ins_name, uptime)
+            # Redis上にins_type,os_typeを保存(インスタンス別料金算出で利用)
+            brain.save_ins_type(ins_name, ins_info[:instance_type])
+            os_type = (!ins_info[:spec].nil? and ins_info[:spec].downcase.include?("rhel") ? "rhel" : "centos")
+            brain.save_os_type(ins_name, os_type)
           end
 
           # タグ[LastUsedTime]を現在時刻で上書き

@@ -40,7 +40,12 @@ module Ruboty
 
               cur_month_start = Time.new(now.year, now.month).to_s
               uptime  = util.get_time_diff(last_used_time, cur_month_start)
+              # Redis上の月別稼働時間累積値を更新
               brain.save_ins_uptime(name, uptime, yyyymm)
+              # Redis上にins_type,os_typeを保存(インスタンス別料金算出で利用)
+              brain.save_ins_type(name, ins[:instance_type], yyyymm)
+              os_type = (!ins[:spec].nil? and ins[:spec].downcase.include?("rhel") ? "rhel" : "centos")
+              brain.save_os_type(name, os_type, yyyymm)
 
               # タグ[LastUsedTime]を今月頭の時刻で上書き
               params =  {"LastUsedTime" => cur_month_start}
@@ -49,21 +54,38 @@ module Ruboty
           end
 
           # 起動中インスタンスの起動時間取得
-          brain_infos = brain.get_ins_uptime(yyyymm)
-          # 今月指定(or 指定なし)の場合は、起動から現在までの時間を加算して表示（注．redisには保存しない）
+          brain_infos = brain.get_ins_infos(yyyymm)
+          # 今月指定(or 指定なし)の場合は、起動から現在までの時間を加算して表示（注．加算した結果はredisには保存しない）
           if cur_month == yyyymm
             ins_infos.each do |name, ins|
               next if ins[:state] != "running"
               last_used_time = ins[:last_used_time]
               next if last_used_time.nil?
-              brain_infos[name] ||= 0
-              brain_infos[name] += util.get_time_diff(last_used_time)
+              os_type = (!ins[:spec].nil? and ins[:spec].downcase.include?("rhel") ? "rhel" : "centos")
+
+              brain_infos[name] ||= {:uptime => 0, :os_type => os_type, :ins_type => ins[:instance_type]}
+              brain_infos[name][:uptime] += util.get_time_diff(last_used_time)
             end
           end
 
-          reply_msg = "```\nインスタンス別稼働時間を集計したよ！\n対象月[#{yyyymm}]"
-          brain_infos.sort {|(k1, v1), (k2, v2)| v2 <=> v1}.each do |name, uptime|
-            reply_msg << sprintf("\n%4d h => %s", uptime, name)
+          ins_price     = Ruboty::Ec2::Const::InsPrice
+          os_rate       = Ruboty::Ec2::Const::RhelCentPriceRate
+          exchange_rate = util.exchange_rate
+          
+          reply_msg =  "```\nインスタンス別稼働時間を集計して、概算費用を計算してみたよ！\n対象月[#{yyyymm}] 為替レート[#{exchange_rate}]"
+          reply_msg << "\n- InsName ------| Uptime  * UnitPrice => Estimated Cost (USD & JPY)"
+          brain_infos.sort {|(k1, v1), (k2, v2)| v2[:uptime] <=> v1[:uptime]}.each do |name, brain_info|
+            uptime   = brain_info[:uptime]
+            os_type  = brain_info[:os_type]
+            ins_type = brain_info[:ins_type]
+
+            price_per_hour = ins_price[ins_type] || ins_price["other"]
+            price_per_hour = price_per_hour * os_rate if os_type == "rhel"
+            uptime_monthly = brain_info[:uptime]
+            charge_monthly_usd = price_per_hour * uptime_monthly
+            charge_monthly_jpy = (charge_monthly_usd * exchange_rate).ceil
+            reply_msg << sprintf("\n%-15s | %4d Hr * %5.3f USD => %8.3f USD = %6d JPY ",
+                                 name, uptime_monthly, price_per_hour, charge_monthly_usd, charge_monthly_jpy)
           end
           reply_msg << "```"
           if !brain_infos.empty?

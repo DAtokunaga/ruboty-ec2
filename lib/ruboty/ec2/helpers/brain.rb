@@ -9,6 +9,7 @@ module Ruboty
           @channel = Util.new(message).get_channel
           message.robot.brain.data[NAMESPACE] ||= {}
           @brain   = message.robot.brain.data[NAMESPACE][@channel] ||= {}
+          p message.robot.brain.data
         end
 
         def save_ins_uptime(ins_name, uptime, yyyymm = nil)
@@ -18,15 +19,36 @@ module Ruboty
           @brain[ins_name][:uptime][yyyymm] += uptime
         end
 
-        def get_ins_uptime(yyyymm)
-          ins_uptime = {}
+        # 料金計算で使用するためインスタンスタイプ情報を保持
+        def save_ins_type(ins_name, ins_type, yyyymm = nil)
+          yyyymm = Time.now.strftime('%Y%m') if yyyymm.nil?
+          @brain[ins_name] ||= {}
+          @brain[ins_name][:ins_type] ||= {}
+          @brain[ins_name][:ins_type][yyyymm] = ins_type
+        end
+
+        # 料金計算で使用するためRHEL or CentOSの情報を保持
+        # os_type には centos or rhel のいずれかを期待
+        def save_os_type(ins_name, os_type, yyyymm = nil)
+          _os_type = (os_type == "centos" ? "centos" : "rhel")
+          yyyymm = Time.now.strftime('%Y%m') if yyyymm.nil?
+          @brain[ins_name] ||= {}
+          @brain[ins_name][:os_type] ||= {}
+          @brain[ins_name][:os_type][yyyymm] = _os_type
+        end
+
+        def get_ins_infos(yyyymm)
+          ins_infos = {}
           @brain.each do |ins_name, ins_data|
-            uptime_hash = ins_data[:uptime]
-            next if uptime_hash.nil?
-            next if uptime_hash[yyyymm].nil?
-            ins_uptime[ins_name] = uptime_hash[yyyymm]
+            next if ins_data[:uptime].nil? or ins_data[:uptime][yyyymm].nil?
+            next if ins_data[:ins_type].nil? or ins_data[:ins_type][yyyymm].nil?
+            next if ins_data[:os_type].nil? or ins_data[:os_type][yyyymm].nil?
+            ins_infos[ins_name] = {}
+            ins_infos[ins_name][:uptime]   = ins_data[:uptime][yyyymm]
+            ins_infos[ins_name][:os_type]  = ins_data[:os_type][yyyymm]
+            ins_infos[ins_name][:ins_type] = ins_data[:ins_type][yyyymm]
           end
-          ins_uptime
+          ins_infos
         end
 
       end

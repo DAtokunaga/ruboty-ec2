@@ -14,6 +14,12 @@ module Ruboty
           Time.now.strftime("%Y/%m/%d %H:%M:%S.%L")
         end
 
+        def exchange_rate
+          x_rate = ENV["RUBOTY_EC2_EXCHANGE_RATE"]
+          x_rate = 120.0 if x_rate.nil? or x_rate.to_f == 0
+          x_rate.to_f
+        end
+
         def check_channel
           if channels = ENV['RUBOTY_EC2_CHANNELS']
             from_ch = get_channel

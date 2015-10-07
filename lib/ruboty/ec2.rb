@@ -14,6 +14,18 @@ module Ruboty
       InsTypePV  = "m1.medium"
       # instance type (for hvm in use RHEL/CentOS 6 later)
       InsTypeHVM = "t2.medium"
+      # price each instance type
+      InsPrice   = {
+        "t2.micro"  => 0.02,
+        "t2.small"  => 0.04,
+        "t2.medium" => 0.08,
+        "m1.medium" => 0.122
+      }
+      # RHEL/CentOS price rate (t2.mediumの場合のRHEL/CentOSの料金倍率から算出)
+      #   RHEL6(HVM)   t2.medium $0.14/hr
+      #   CentOS6(HVM) t2.medium $0.08/hr
+      #    => 0.14 / 0.08 = 1.75
+      RhelCentPriceRate = 1.75
 
       # Period to archive(days)
       PeriodToArchive = 20
