@@ -19,12 +19,18 @@ module Ruboty
         "t2.micro"  => 0.02,
         "t2.small"  => 0.04,
         "t2.medium" => 0.08,
+        "t2.large"  => 0.16,
         "m1.medium" => 0.122
       }
+      # ebs price using 50GB General Purpose (SSD)
+      #   gp2(ssd)  $0.12 per GB-month of provisioned storage
+      #     => 0.12 * 50 GB = 6
+      EbsPrice   = 6
+
       # RHEL/CentOS price rate (t2.mediumの場合のRHEL/CentOSの料金倍率から算出)
       #   RHEL6(HVM)   t2.medium $0.14/hr
       #   CentOS6(HVM) t2.medium $0.08/hr
-      #    => 0.14 / 0.08 = 1.75
+      #     => 0.14 / 0.08 = 1.75
       RhelCentPriceRate = 1.75
 
       # Period to archive(days)

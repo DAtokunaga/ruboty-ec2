@@ -20,6 +20,15 @@ module Ruboty
           x_rate.to_f
         end
 
+        # 当月中の経過率
+        def daily_rate_monthly
+          now        = Time.now
+          next_month = now + 32 * 24 * 60 * 60
+          start_curr_month = Time.new(now.year, now.month)
+          start_next_month = Time.new(next_month.year, next_month.month)
+          (now - start_curr_month) / (start_next_month - start_curr_month)
+        end
+
         def check_channel
           if channels = ENV['RUBOTY_EC2_CHANNELS']
             from_ch = get_channel

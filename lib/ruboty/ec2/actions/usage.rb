@@ -69,20 +69,33 @@ module Ruboty
           end
 
           ins_price     = Ruboty::Ec2::Const::InsPrice
+          ebs_price     = Ruboty::Ec2::Const::EbsPrice
           os_rate       = Ruboty::Ec2::Const::RhelCentPriceRate
+          # EBS料金の日割り算出のため、当月の進捗率(経過日数/全日数)を取得
+          daily_rate    = (cur_month == yyyymm ? util.daily_rate_monthly : 1.0)
           exchange_rate = util.exchange_rate
-          
-          reply_msg =  "```\nインスタンス別稼働時間を集計して、概算費用を計算してみたよ！\n対象月[#{yyyymm}] 為替レート[#{exchange_rate}]"
+
+          reply_msg =  "```\nインスタンス別に、稼働時間を集計して概算費用を計算してみたよ！"
+          reply_msg << "\n対象月[#{yyyymm}] 為替レート[#{exchange_rate}] 注）設定値のため実際の為替レートとは異なります"
           reply_msg << "\n- InsName ------| Uptime  * UnitPrice => Estimated Cost (USD & JPY)"
           brain_infos.sort {|(k1, v1), (k2, v2)| v2[:uptime] <=> v1[:uptime]}.each do |name, brain_info|
             uptime   = brain_info[:uptime]
             os_type  = brain_info[:os_type]
             ins_type = brain_info[:ins_type]
 
-            price_per_hour = ins_price[ins_type] || ins_price["other"]
-            price_per_hour = price_per_hour * os_rate if os_type == "rhel"
+            # 指定月の稼働時間
             uptime_monthly = brain_info[:uptime]
-            charge_monthly_usd = price_per_hour * uptime_monthly
+            if ins_price[ins_type].nil?
+              reply_msg << sprintf("\n%-15s | %4d Hr   ※タイプ[%s]の料金が未定義のため料金算出不可",
+                                   name, uptime_monthly, ins_type)
+              next
+            end
+            # インスタンスタイプから時間単価取得
+            price_per_hour = ins_price[ins_type]
+            # RHEL(有償AMI)の場合の割増処理
+            price_per_hour = price_per_hour * os_rate if os_type == "rhel"
+            # 指定月の課金額(EC2使用料＋EBS使用料) ※EBSは月末に満額となるよう日割り計算する
+            charge_monthly_usd = (price_per_hour * uptime_monthly) + (ebs_price * daily_rate) 
             charge_monthly_jpy = (charge_monthly_usd * exchange_rate).ceil
             reply_msg << sprintf("\n%-15s | %4d Hr * %5.3f USD => %8.3f USD = %6d JPY ",
                                  name, uptime_monthly, price_per_hour, charge_monthly_usd, charge_monthly_jpy)
