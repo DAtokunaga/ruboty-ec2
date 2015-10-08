@@ -75,7 +75,7 @@ module Ruboty
           daily_rate    = (cur_month == yyyymm ? util.daily_rate_monthly : 1.0)
           exchange_rate = util.exchange_rate
 
-          reply_msg =  "```\nインスタンス別に、稼働時間を集計して概算費用を計算してみたよ！"
+          reply_msg =  "インスタンス別に、稼働時間を集計して概算費用を計算してみたよ！\n```"
           reply_msg << "\n対象月[#{yyyymm}] 為替レート[#{exchange_rate}] 注）設定値のため実際の為替レートとは異なります"
           reply_msg << "\n- InsName ------| Uptime  * UnitPrice => Estimated Cost (USD & JPY)"
           brain_infos.sort {|(k1, v1), (k2, v2)| v2[:uptime] <=> v1[:uptime]}.each do |name, brain_info|
