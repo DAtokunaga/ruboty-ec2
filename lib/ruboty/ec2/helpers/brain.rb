@@ -7,13 +7,9 @@ module Ruboty
         NAMESPACE = 'ec2'
         def initialize(message)
           @channel = Util.new(message).get_channel
-@channel = "e-support"
           message.robot.brain.data[NAMESPACE] ||= {}
           @brain   = message.robot.brain.data[NAMESPACE][@channel] ||= {}
           p message.robot.brain.data
-aa = message.robot.brain.data[NAMESPACE][@channel]
-message.robot.brain.data[NAMESPACE] = {}
-message.robot.brain.data[NAMESPACE][@channel] = aa
         end
 
         def save_ins_uptime(ins_name, uptime, yyyymm = nil)
