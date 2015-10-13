@@ -44,7 +44,7 @@ module Ruboty
               brain.save_ins_uptime(name, uptime, yyyymm)
               # Redis上にins_type,os_typeを保存(インスタンス別料金算出で利用)
               brain.save_ins_type(name, ins[:instance_type], yyyymm)
-              os_type = (!ins[:spec].nil? and ins[:spec].downcase.include?("rhel") ? "rhel" : "centos")
+              os_type = (!ins[:spec].nil? and ins[:spec].downcase.include?("rhel")) ? "rhel" : "centos"
               brain.save_os_type(name, os_type, yyyymm)
 
               # タグ[LastUsedTime]を今月頭の時刻で上書き
@@ -61,10 +61,11 @@ module Ruboty
               next if ins[:state] != "running"
               last_used_time = ins[:last_used_time]
               next if last_used_time.nil?
-              os_type = (!ins[:spec].nil? and ins[:spec].downcase.include?("rhel") ? "rhel" : "centos")
-
-              brain_infos[name] ||= {:uptime => 0, :os_type => os_type, :ins_type => ins[:instance_type]}
-              brain_infos[name][:uptime] += util.get_time_diff(last_used_time)
+              os_type = (!ins[:spec].nil? and ins[:spec].downcase.include?("rhel")) ? "rhel" : "centos"
+              brain_infos[name] ||= {:uptime => 0}
+              brain_infos[name][:uptime]    += util.get_time_diff(last_used_time)
+              brain_infos[name][:os_type]  ||= os_type
+              brain_infos[name][:ins_type] ||= ins[:instance_type]
             end
           end
 

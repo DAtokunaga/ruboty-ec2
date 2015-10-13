@@ -40,9 +40,9 @@ module Ruboty
         def get_ins_infos(yyyymm)
           ins_infos = {}
           @brain.each do |ins_name, ins_data|
-            next if ins_data[:uptime].nil? or ins_data[:uptime][yyyymm].nil?
+            next if ins_data[:uptime].nil?   or ins_data[:uptime][yyyymm].nil?
             next if ins_data[:ins_type].nil? or ins_data[:ins_type][yyyymm].nil?
-            next if ins_data[:os_type].nil? or ins_data[:os_type][yyyymm].nil?
+            next if ins_data[:os_type].nil?  or ins_data[:os_type][yyyymm].nil?
             ins_infos[ins_name] = {}
             ins_infos[ins_name][:uptime]   = ins_data[:uptime][yyyymm]
             ins_infos[ins_name][:os_type]  = ins_data[:os_type][yyyymm]
