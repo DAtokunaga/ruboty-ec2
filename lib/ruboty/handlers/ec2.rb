@@ -15,6 +15,7 @@ require "ruboty/ec2/actions/autostart"
 require "ruboty/ec2/actions/autostop"
 require "ruboty/ec2/actions/copy"
 require "ruboty/ec2/actions/usage"
+require "ruboty/ec2/actions/access"
 
 module Ruboty
   module Handlers
@@ -35,12 +36,14 @@ module Ruboty
       on /ec2 extract (?<ins_name>\S+)\z/, name: 'extract',   description: 'extract backed up instance'
       on /ec2 copy (?<from_arc>\S+) +(?<to_ins>\S+)\z/,
                                            name: 'copy',      description: 'copy instance'
+      on /ec2 access (?<cmd>give|revoke) +(?<ins_name>\S+) *(?<sg_name>\S+)*\z/,
+                                           name: 'access',    description: 'manage permitted source ip'
 
       # インスタンスメタ情報管理系
       on /ec2 detail (?<ins_name>\S+)\z/,  name: 'detail',    description: 'show instance/archive/AMI detail information'
       on(/ec2 list *(?<resource>instance|archive|ami)*\z/,
                                            name: 'list',      description: 'show instance/archive/AMI list')
-      on(/ec2 usage *(?<yyyymm>last|201\d{3}+)*\z/,
+      on(/ec2 usage *(?<yyyymm>last|20\d{4}+)*\z/,
                                            name: 'usage',     description: 'show instance usage of specified month')
       on(/ec2 edit (?<tag_name>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/m,
                                            name: 'edit',      description: 'edit data of spec, desc and param')
@@ -91,6 +94,10 @@ module Ruboty
 
       def copy(message)
         Ruboty::Ec2::Actions::Copy.new(message).call
+      end
+
+      def access(message)
+        Ruboty::Ec2::Actions::Access.new(message).call
       end
 
       def usage(message)

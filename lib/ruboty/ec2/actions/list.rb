@@ -19,13 +19,20 @@ module Ruboty
           ins_infos = ec2.get_ins_infos
           msg_list  = ""
           ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ins|
-            msg_list << sprintf("\n[%s] %-15s | %-12s | %-14s | %12s | %-9s | %s",
+            sg_names = ""
+            ins[:groups].each do |sg_name, sg_id|
+              next if sg_name == "default"
+              sg_names << "," if !sg_names.empty?
+              sg_names << sg_name
+            end
+            msg_list << sprintf("\n[%s] %-15s | %-12s | %-14s | %-6s | %12s | %-9s | %s",
                                  ins[:state_mark], name, ins[:private_ip], ins[:public_ip],
-                                 ins[:parent_id], ins[:instance_type], ins[:owner])
+                                 sg_names, ins[:parent_id], ins[:instance_type], ins[:owner])
           end
           header_str = "↓凡例．[\u{25B2}]->pending, [\u{25BA}]->running, [\u{25BC}]->shutting-down/stopping, [\u{25A0}]->stopped\n"
-          header_str << sprintf("[-] %-15s|%-12s|%-14s|%-12s|%-9s|%s",
-                                "- InsName ------", "- PrivateIp --", "- PublicIp -----", "- UsingAMI ---", "- Type ----", "- Owner ---")
+          header_str << sprintf("[-] %s|%s|%s|%s|%s|%s|%s",
+                                "- InsName ------", "- PrivateIp --", "- PublicIp -----",
+                                " Access ", "- UsingAMI ---", "- Type ----", "- Owner ---")
           reply_msg  = "```#{header_str}#{msg_list}```"
           reply_msg  = "インスタンスはまだ１つもないよ" if msg_list.empty?
           message.reply(reply_msg)
@@ -67,8 +74,8 @@ module Ruboty
         rescue => e
           message.reply(e.message)
         end
+
       end
     end
   end
 end
-

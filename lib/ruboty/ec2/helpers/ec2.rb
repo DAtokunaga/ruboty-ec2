@@ -43,6 +43,11 @@ module Ruboty
               ins_info[:state]         = ins.state.name
               ins_info[:state_mark]    = @util.get_state_mark(ins.state.name)
               ins_info[:vpc_id]        = ins.vpc_id
+              sg_infos = {}
+              ins.security_groups.each do |sg|
+                sg_infos[sg.group_name] = sg.group_id
+              end
+              ins_info[:groups]        = sg_infos
               ins_info[:private_ip]    = ins.private_ip_address
               ins_info[:public_ip]     = ins.public_ip_address
               ins.tags.each do |tag|
@@ -216,6 +221,27 @@ module Ruboty
           @ec2.deregister_image(image_id: arc_id)
           @ec2.delete_snapshot(snapshot_id: snapshot_id)
         end
+
+        def get_vpc_id
+          params = {:filters => [{:name => "subnet-id", values: [@subnet_id]}]}
+          resp   = @ec2.describe_subnets(params)
+          resp.subnets.first.vpc_id
+        end
+
+        def get_sg_infos
+          params   = {:filters => [{:name => "vpc-id", values: [get_vpc_id]}]}
+          resp     = @ec2.describe_security_groups(params)
+          sg_infos = {}
+          resp.security_groups.each do |sg|
+            sg_infos[sg.group_name] = sg.group_id
+          end
+          sg_infos
+        end
+
+        def update_groups(ins_id, sg_ids)
+          params   = {:instance_id => ins_id, :groups => sg_ids}
+          @ec2.modify_instance_attribute(params)
+        end   
 
       end
     end
