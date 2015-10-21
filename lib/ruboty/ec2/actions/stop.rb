@@ -26,6 +26,7 @@ module Ruboty
           ins_info = ins_infos[ins_name]
           raise "インスタンス[#{ins_name}]はもう止まってるよ" if ins_info[:state] == "stopped"
           raise "インスタンス[#{ins_name}]は今処理中で止められないっす..." if ins_info[:state] != "running"
+          raise "インスタンス[#{ins_name}]は停止しちゃだめだよ" if ins_info[:private_ip] == "10.0.0.4"
 
           ## メイン処理 ##
 

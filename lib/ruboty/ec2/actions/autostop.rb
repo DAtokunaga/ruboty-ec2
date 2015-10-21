@@ -26,6 +26,7 @@ module Ruboty
           stop_ins_infos = {}
           ins_infos.each do |name, ins|
             next if ins[:state] != "running"
+            next if ins[:private_ip] == "10.0.0.4"
             next if !ins[:except_stop].nil? and !ins[:except_stop].empty?
             stop_ins_infos[name] = ins
           end
@@ -33,15 +34,13 @@ module Ruboty
 
           # 停止前にPublicIP取得
           ins_pip_hash = {}
+          stop_ins_ids = []
           stop_ins_infos.each do |name, ins|
             ins_pip_hash[name] = ins[:public_ip] if !ins[:public_ip].nil?
+            stop_ins_ids << ins[:instance_id]
           end
 
           # インスタンス停止
-          stop_ins_ids = []
-          stop_ins_infos.each do |name, ins|
-            stop_ins_ids << ins[:instance_id]
-          end
           ec2.stop_ins(stop_ins_ids)
 
           # 稼働時間を記録
