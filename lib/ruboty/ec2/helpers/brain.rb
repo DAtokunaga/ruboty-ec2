@@ -9,7 +9,6 @@ module Ruboty
           @channel = Util.new(message).get_channel
           message.robot.brain.data[NAMESPACE] ||= {}
           @brain   = message.robot.brain.data[NAMESPACE][@channel] ||= {}
-          p message.robot.brain.data
         end
 
         def save_ins_uptime(ins_name, uptime, yyyymm = nil)
@@ -39,6 +38,7 @@ module Ruboty
 
         def get_ins_infos(yyyymm)
           ins_infos = {}
+          p @brain
           @brain.each do |ins_name, ins_data|
             next if ins_data[:uptime].nil?   or ins_data[:uptime][yyyymm].nil?
             next if ins_data[:ins_type].nil? or ins_data[:ins_type][yyyymm].nil?
