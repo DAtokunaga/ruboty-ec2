@@ -22,6 +22,7 @@ module Ruboty
             sg_names = ""
             ins[:groups].each do |sg_name, sg_id|
               next if sg_name == "default"
+              next if !sg_name.index("skt-").nil?
               sg_names << "," if !sg_names.empty?
               sg_names << sg_name
             end
