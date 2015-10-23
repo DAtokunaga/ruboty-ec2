@@ -44,6 +44,10 @@ module Ruboty
             next if cl.index("handlers").nil? or !cmd_name.empty?
             cmd_name = cl[/`([^']*)'/, 1]
           end
+          # superadmins
+          admin_env = ENV["RUBOTY_EC2_SUPER_ADMIN"]
+          admins    = (admin_env.nil? ? [] : admin_env.split(","))
+
           from_ch  = get_channel
           restrict_list  = ENV["RUBOTY_EC2_RESTRICT_CMD_#{from_ch}"] ||= ""
           return if restrict_list.empty?
@@ -53,7 +57,7 @@ module Ruboty
             _rstrct   = rstrct.split(":")
             _cmd_name = _rstrct[0]
             _rstrct.shift
-            restrict_hash[_cmd_name] = _rstrct
+            restrict_hash[_cmd_name] = admins + _rstrct
           end
           if restrict_hash.include?(cmd_name)
             raise "コマンド#{cmd_name}を実行する権限がないよ" if restrict_hash[cmd_name].empty?
