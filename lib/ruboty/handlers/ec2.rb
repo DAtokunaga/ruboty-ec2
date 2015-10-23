@@ -41,7 +41,7 @@ module Ruboty
 
       # インスタンスメタ情報管理系
       on /ec2 detail (?<ins_name>\S+)\z/,  name: 'detail',    description: 'show instance/archive/AMI detail information'
-      on(/ec2 list *(?<resource>instance|archive|ami|filter)* *(?<word>\S+)*\z/,
+      on(/ec2 list *((?<resource>instance|archive|ami)*|(?<resource>filter) +(?<word>\S+)+) *\z/,
                                            name: 'list',      description: 'show instance/archive/AMI list')
       on(/ec2 usage *(?<yyyymm>last|20\d{4}+)*\z/,
                                            name: 'usage',     description: 'show instance usage of specified month')
