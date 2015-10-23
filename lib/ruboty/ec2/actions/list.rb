@@ -10,11 +10,12 @@ module Ruboty
           instance_list if resource == "instance"
           archive_list  if resource == "archive"
           ami_list      if resource == "ami"
+          filtered_list if resource == "filter"
         end
 
         private
 
-        def instance_list
+        def instance_list(filter_str = nil)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           ins_infos = ec2.get_ins_infos
           msg_list  = ""
@@ -26,6 +27,7 @@ module Ruboty
               sg_names << "," if !sg_names.empty?
               sg_names << sg_name
             end
+            next if "#{name} #{ins[:owner]}".index(filter_str).nil? if !filter_str.nil?
             msg_list << sprintf("\n[%s] %-15s | %-12s | %-14s | %-6s | %12s | %-9s | %s",
                                  ins[:state_mark], name, ins[:private_ip], ins[:public_ip],
                                  sg_names, ins[:parent_id], ins[:instance_type], ins[:owner])
@@ -35,24 +37,25 @@ module Ruboty
                                 "- InsName ------", "- PrivateIp --", "- PublicIp -----",
                                 " Access ", "- UsingAMI ---", "- Type ----", "- Owner ---")
           reply_msg  = "```#{header_str}#{msg_list}```"
-          reply_msg  = "インスタンスはまだ１つもないよ" if msg_list.empty?
+          reply_msg  = "インスタンスが見つからないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
         end
 
-        def archive_list
+        def archive_list(filter_str = nil)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           arc_infos = ec2.get_arc_infos
           msg_list  = ""
           arc_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
+            next if "#{name} #{ami[:owner]}".index(filter_str).nil? if !filter_str.nil?
             msg_list << sprintf("\n[%9s] %-15s | %-12s | %-12s | %s",
                          ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], ami[:owner])
           end
           header_str = sprintf("[AMIStatus]%-15s|%-12s|%-12s|%s",
                                 "- InsName -------", "- UsingAMI ---",  "- PrivateIp --", "- Owner ---")
           reply_msg  = "```\n#{header_str}#{msg_list}```"
-          reply_msg  = "アーカイブはまだ１つもないよ" if msg_list.empty?
+          reply_msg  = "アーカイブが見つからないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
@@ -70,10 +73,18 @@ module Ruboty
             msg_list << sprintf("\n%s | %s", ami[:image_id], ami_spec)
           end
           reply_msg = "```#{msg_list}```"
-          reply_msg = "AMIはまだ１つもないよ" if msg_list.empty?
+          reply_msg = "AMIが見つからないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
+        end
+
+        def filtered_list
+          word = message[:word]
+          message.reply("filter by '#{word}'\n[インスタンス]\n")
+          instance_list(word)
+          message.reply("[アーカイブ]\n")
+          archive_list(word)
         end
 
       end
