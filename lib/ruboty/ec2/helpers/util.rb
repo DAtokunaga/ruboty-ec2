@@ -4,7 +4,8 @@ module Ruboty
   module Ec2
     module Helpers
       class Util
-        def initialize(message)
+        def initialize(message, channel = nil)
+          @channel = channel if !channel.nil?
           @msg = message
           check_channel
           check_command
@@ -96,7 +97,15 @@ module Ruboty
           subnet_id
         end
 
+        def get_account_id
+          from_ch    = get_channel
+          account_id = ENV["RUBOTY_EC2_ACCOUNT_ID_#{from_ch}"]
+          raise "環境変数[RUBOTY_EC2_ACCOUNT_ID_#{from_ch}]の設定が足りないみたい。。" if account_id.nil? or account_id.empty?
+          account_id
+        end
+
         def get_channel
+          return @channel if !@channel.nil?
           @msg.original[:from] ? @msg.original[:from].split("@").first : "shell"
         end
 

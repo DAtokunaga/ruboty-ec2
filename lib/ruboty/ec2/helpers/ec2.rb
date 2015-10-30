@@ -4,8 +4,8 @@ module Ruboty
   module Ec2
     module Helpers
       class Ec2
-        def initialize(message) 
-          @util      = Util.new(message)
+        def initialize(message, channel = nil) 
+          @util      = Util.new(message, channel)
           @subnet_id = @util.get_subnet_id
           @ec2       = ::Aws::EC2::Client.new(@util.get_aws_config)
           raise "SubnetIDが間違っているよ" if !exist_subnet?(@subnet_id)
@@ -242,6 +242,14 @@ module Ruboty
           params   = {:instance_id => ins_id, :groups => sg_ids}
           @ec2.modify_instance_attribute(params)
         end   
+
+        def add_permission(ami_id, account_id)
+          params   = {:image_id => ami_id,
+                      :attribute => "launchPermission",
+                      :operation_type => "add",
+                      :user_ids => [account_id]}
+          @ec2.modify_image_attribute(params)
+        end
 
       end
     end

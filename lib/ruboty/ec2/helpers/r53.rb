@@ -4,8 +4,8 @@ module Ruboty
   module Ec2
     module Helpers
       class Route53
-        def initialize(message) 
-          @util    = Util.new(message)
+        def initialize(message, channel = nil) 
+          @util    = Util.new(message, channel)
           @domain  = @util.get_domain
           @r53     = ::Aws::Route53::Client.new(@util.get_aws_config)
           @zone_id = get_zone_id
