@@ -174,6 +174,9 @@ module Ruboty
           # パブリックIPを取得
           public_ip = to_ec2.wait_for_associate_public_ip(to_ins_name)
 
+          # 使用済みAMIのパーミッションをコピー先AWSアカウントから剥奪する
+          fr_ec2.delete_permission(fr_arc_info[:image_id], to_util.get_account_id)
+
           # DNS設定
           r53 = Ruboty::Ec2::Helpers::Route53.new(message, to_account)
           r53.update_record_sets({to_ins_name => public_ip})

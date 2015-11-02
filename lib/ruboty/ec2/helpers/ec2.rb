@@ -251,6 +251,14 @@ module Ruboty
           @ec2.modify_image_attribute(params)
         end
 
+        def delete_permission(ami_id, account_id)
+          params   = {:image_id => ami_id,
+                      :attribute => "launchPermission",
+                      :operation_type => "remove",
+                      :user_ids => [account_id]}
+          @ec2.modify_image_attribute(params)
+        end
+
       end
     end
   end
