@@ -24,8 +24,9 @@ module Ruboty
         end
 
         def get_ins_infos(ins_name = nil)
-          filter_str = {:filters => [{:name => "tag:Name", :values => [ins_name]}]}
-          params     = (ins_name ? filter_str : {})
+          params     = {:filters => [{:name => "subnet-id", :values => [@subnet_id]}]}
+          params[:filters] << {:name => "tag:Name", :values => [ins_name]} if !ins_name.nil?
+
           resp       = @ec2.describe_instances(params)
           ins_infos  = {}
 
