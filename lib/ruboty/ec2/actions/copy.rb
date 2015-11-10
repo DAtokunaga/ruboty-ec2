@@ -25,6 +25,16 @@ module Ruboty
 
           ## 事前チェック ##
 
+          # インスタンス名チェック
+          if !to_ins_name.match(/^[a-z0-9\-]+$/) or to_ins_name.length > 15
+            warn_msg =  "インスタンス名は↓このルールで指定してね\n"
+            warn_msg << "```\n"
+            warn_msg << "  許容文字 -> 半角英数字(小文字)、及び-(半角ハイフン)\n"
+            warn_msg << "  文字列長 -> 15文字以内"
+            warn_msg << "```"
+            raise warn_msg
+          end
+
           ## 現在利用中のインスタンス／AMIの情報を取得
           ins_infos = ec2.get_ins_infos
           arc_infos = ec2.get_arc_infos
@@ -106,6 +116,16 @@ module Ruboty
           caller  = fr_util.get_caller
 
           ## 事前チェック ##
+
+          # インスタンス名チェック
+          if !to_ins_name.match(/^[a-z0-9\-]+$/) or to_ins_name.length > 15
+            warn_msg =  "インスタンス名は↓このルールで指定してね\n"
+            warn_msg << "```\n"
+            warn_msg << "  許容文字 -> 半角英数字(小文字)、及び-(半角ハイフン)\n"
+            warn_msg << "  文字列長 -> 15文字以内"
+            warn_msg << "```"
+            raise warn_msg
+          end
 
           # 同じ名前をエラーとする
           raise "同じ名前ではコピーできないよ" if fr_arc_name == to_ins_name
