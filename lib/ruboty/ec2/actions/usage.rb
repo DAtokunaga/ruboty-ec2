@@ -19,7 +19,7 @@ module Ruboty
           cur_month = now.strftime("%Y%m")
           yyyymm    = (message[:yyyymm].nil? ? cur_month : message[:yyyymm])
           # last指定時は前月を設定
-          yyyymm = Time.new(now.year, now.month-1).strftime("%Y%m") if yyyymm == "last"
+          yyyymm = (Time.new(now.year, now.month)-10).strftime("%Y%m") if yyyymm == "last"
 
           ## メイン処理 ##
 
