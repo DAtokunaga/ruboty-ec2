@@ -26,7 +26,7 @@ module Ruboty
           stop_ins_infos = {}
           ins_infos.each do |name, ins|
             next if ins[:state] != "running"
-            next if !/10.[\d]+.0.4/.match(ins[:private_ip]).nil?
+            next if !/10.[\d]+.0.4$/.match(ins[:private_ip]).nil?
             next if !ins[:except_stop].nil? and !ins[:except_stop].empty?
             stop_ins_infos[name] = ins
           end
