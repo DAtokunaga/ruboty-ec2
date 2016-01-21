@@ -186,7 +186,7 @@ module Ruboty
             sleep(1)
             ins_info  = get_ins_infos(ins_name)
             public_ip = ins_info[ins_name][:public_ip] if !ins_info[ins_name].nil?
-            break if ins_info.empty? or (Time.now - started_at).to_i > 60
+            break if ins_info.empty? or (Time.now - started_at).to_i > 90
           end
           raise "インスタンス[#{ins_name}]が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ" if public_ip.nil?
           public_ip
@@ -203,7 +203,7 @@ module Ruboty
               next if !ins_names.include?(name)
               ins_pip_hash[name] = ins[:public_ip] if !ins[:public_ip].nil?
             end
-            break if (Time.now - started_at).to_i > 60
+            break if (Time.now - started_at).to_i > 90
           end
           if ins_count != ins_pip_hash.size
             raise "インスタンス#{ins_names-ins_pip_hash.keys}が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ"
