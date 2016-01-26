@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Copy < Ruboty::Actions::Base
         def call
+          puts "ec2 copy #{message[:from_arc]} #{message[:to_ins]} called"
           to_ins_name = message[:to_ins]
           if to_ins_name.index(":").nil?
             copy

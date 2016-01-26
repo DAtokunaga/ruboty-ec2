@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Stop < Ruboty::Actions::Base
         def call
+          puts "ec2 stop called"
           stop
         end
 

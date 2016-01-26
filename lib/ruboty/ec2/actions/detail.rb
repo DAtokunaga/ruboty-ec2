@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Detail < Ruboty::Actions::Base
         def call
+          puts "ec2 detail called"
           detail
         end
 

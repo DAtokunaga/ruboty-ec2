@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Usage < Ruboty::Actions::Base
         def call
+          puts "ec2 usage called"
           usage
         end
 

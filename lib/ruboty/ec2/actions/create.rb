@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Create < Ruboty::Actions::Base
         def call
+          puts "ec2 create called"
           create
         end
 

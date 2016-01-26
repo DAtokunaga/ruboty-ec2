@@ -5,6 +5,7 @@ module Ruboty
     module Actions
       class List < Ruboty::Actions::Base
         def call
+          puts "ec2 list #{message[:resource]} called"
           resource = message[:resource]
           instance_list if !resource
           instance_list if resource == "instance"

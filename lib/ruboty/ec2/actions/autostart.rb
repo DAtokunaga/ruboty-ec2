@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Autostart < Ruboty::Actions::Base
         def call
+          puts "ec2 autostart #{message[:cmd]} called"
           cmd_name = message[:cmd]
           exec if cmd_name == "exec"
           list if cmd_name == "list"

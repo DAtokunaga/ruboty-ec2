@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Archive < Ruboty::Actions::Base
         def call
+          puts "ec2 archive #{message[:ins_name]} called"
           ins_name = message[:ins_name]
           if ins_name
             archive

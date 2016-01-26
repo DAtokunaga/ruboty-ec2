@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Access < Ruboty::Actions::Base
         def call
+          puts "ec2 access #{cmd_name} called"
           cmd_name = message[:cmd]
           give   if cmd_name == "give"
           revoke if cmd_name == "revoke"

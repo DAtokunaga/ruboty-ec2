@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Extract < Ruboty::Actions::Base
         def call
+          puts "ec2 extract called"
           extract
         end
 

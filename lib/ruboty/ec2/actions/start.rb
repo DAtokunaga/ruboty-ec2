@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Start < Ruboty::Actions::Base
         def call
+          puts "ec2 start called"
           start
         end
 

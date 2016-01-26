@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Destroy < Ruboty::Actions::Base
         def call
+          puts "ec2 destroy called"
           destroy
         end
 

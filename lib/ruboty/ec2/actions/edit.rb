@@ -3,6 +3,7 @@ module Ruboty
     module Actions
       class Edit < Ruboty::Actions::Base
         def call
+          puts "ec2 edit called"
           edit
         end
 
