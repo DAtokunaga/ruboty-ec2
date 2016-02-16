@@ -3,14 +3,15 @@ module Ruboty
     module Actions
       class Create < Ruboty::Actions::Base
         def call
-          puts "ec2 create starting..."
+          puts "Ruboty::Ec2::Actions::Create.call starting..."
           create
-          puts "ec2 create finished."
+          puts "Ruboty::Ec2::Actions::Create.call finished."
         end
 
         private
 
         def create
+          puts "Ruboty::Ec2::Actions::Create.create called"
           # AWSアクセス、その他ユーティリティのインスタンス化
           util = Ruboty::Ec2::Helpers::Util.new(message)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
@@ -20,11 +21,10 @@ module Ruboty
           ami_id   = (message[:ami_id].nil? ? util.get_default_ami : message[:ami_id])
           _caller   = util.get_caller
           puts "Input Parameter:"
-          puts "  ins_name[#{ins_name}]"
-          puts "  ami_id  [#{ami_id}]"
+          puts "  ins_name[#{message[:ins_name]}]"
+          puts "  ami_id  [#{message[:ami_id]}]"
           puts "  caller  [#{_caller}]"
 
-exit
           ## 事前チェック ##
 
           # インスタンス名チェック

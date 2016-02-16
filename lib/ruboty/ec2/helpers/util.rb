@@ -5,6 +5,7 @@ module Ruboty
     module Helpers
       class Util
         def initialize(message, channel = nil)
+          puts "Ruboty::Ec2::Helpers::Util.initialize called"
           @channel = channel if !channel.nil?
           @msg = message
           check_channel
@@ -12,10 +13,12 @@ module Ruboty
         end
 
         def now
+          puts "Ruboty::Ec2::Helpers::Util.now called"
           Time.now.strftime("%Y/%m/%d %H:%M:%S.%L")
         end
 
         def exchange_rate
+          puts "Ruboty::Ec2::Helpers::Util.exchange_rate called"
           x_rate = ENV["RUBOTY_EC2_EXCHANGE_RATE"]
           x_rate = 120.0 if x_rate.nil? or x_rate.to_f == 0
           x_rate.to_f
@@ -23,6 +26,7 @@ module Ruboty
 
         # 当月中の経過率
         def daily_rate_monthly
+          puts "Ruboty::Ec2::Helpers::Util.daily_rate_monthly called"
           now        = Time.now
           next_month = now + 32 * 24 * 60 * 60
           start_curr_month = Time.new(now.year, now.month)
@@ -31,6 +35,7 @@ module Ruboty
         end
 
         def check_channel
+          puts "Ruboty::Ec2::Helpers::Util.check_channel called"
           if channels = ENV['RUBOTY_EC2_CHANNELS']
             from_ch = get_channel
             raise "このチャンネルでは実行できないよ" if !channels.split(",").include?(from_ch)
@@ -40,6 +45,7 @@ module Ruboty
         end
 
         def check_command
+          puts "Ruboty::Ec2::Helpers::Util.check_command called"
           cmd_name = ""
           caller.each do |cl|
             next if cl.index("handlers").nil? or !cmd_name.empty?
@@ -69,6 +75,7 @@ module Ruboty
         end
 
         def get_aws_config
+          puts "Ruboty::Ec2::Helpers::Util.get_aws_config called"
           from_ch    = get_channel
           access_key = ENV["RUBOTY_EC2_ACCESS_KEY_#{from_ch}"]
           secret_key = ENV["RUBOTY_EC2_SECRET_KEY_#{from_ch}"]
@@ -77,6 +84,7 @@ module Ruboty
         end
 
         def get_domain
+          puts "Ruboty::Ec2::Helpers::Util.get_domain called"
           from_ch   = get_channel
           domain    = ENV["RUBOTY_EC2_DOMAIN_#{from_ch}"]
           raise "環境変数[RUBOTY_EC2_DOMAIN_#{from_ch}]の設定が足りないみたい。。" if domain.nil? or domain.empty?
@@ -84,6 +92,7 @@ module Ruboty
         end
 
         def get_default_ami
+          puts "Ruboty::Ec2::Helpers::Util.get_default_ami called"
           from_ch   = get_channel
           ami_id    = ENV["RUBOTY_EC2_DEFAULT_AMI_#{from_ch}"]
           raise "環境変数[RUBOTY_EC2_DEFAULT_AMI_#{from_ch}]の設定が足りないみたい。。" if ami_id.nil? or ami_id.empty?
@@ -91,6 +100,7 @@ module Ruboty
         end
 
         def get_subnet_id
+          puts "Ruboty::Ec2::Helpers::Util.get_subnet_id called"
           from_ch   = get_channel
           subnet_id = ENV["RUBOTY_EC2_SUBNET_ID_#{from_ch}"]
           raise "環境変数[RUBOTY_EC2_SUBNET_ID_#{from_ch}]の設定が足りないみたい。。" if subnet_id.nil? or subnet_id.empty?
@@ -98,6 +108,7 @@ module Ruboty
         end
 
         def get_account_id
+          puts "Ruboty::Ec2::Helpers::Util.get_account_id called"
           from_ch    = get_channel
           account_id = ENV["RUBOTY_EC2_ACCOUNT_ID_#{from_ch}"]
           raise "環境変数[RUBOTY_EC2_ACCOUNT_ID_#{from_ch}]の設定が足りないみたい。。" if account_id.nil? or account_id.empty?
@@ -105,15 +116,18 @@ module Ruboty
         end
 
         def get_channel
+          puts "Ruboty::Ec2::Helpers::Util.get_channel called"
           return @channel if !@channel.nil?
           @msg.original[:from] ? @msg.original[:from].split("@").first : "shell"
         end
 
         def get_caller
+          puts "Ruboty::Ec2::Helpers::Util.get_caller called"
           @msg.original[:from] ? @msg.original[:from].split("/").last : "shell"
         end
 
         def usable_iprange(subnet_cidr)
+          puts "Ruboty::Ec2::Helpers::Util.usable_iprange called"
           iprange_array = []
           iprange_range = IPAddr.new(subnet_cidr).to_range
           iprange_range.each_with_index do |ipaddr,index|
@@ -125,6 +139,7 @@ module Ruboty
         end
 
         def get_state_mark(_state)
+          puts "Ruboty::Ec2::Helpers::Util.get_state_mark called"
           case _state
             when "pending"       then state = "\u{25B2}"
             when "running"       then state = "\u{25BA}"
@@ -138,6 +153,7 @@ module Ruboty
         end
 
         def get_time_diff(from_str, to_str = nil)
+          puts "Ruboty::Ec2::Helpers::Util.get_time_diff called"
           to_str     = Time.now.to_s if to_str.nil?
           uptime_sec = Time.parse(to_str) - Time.parse(from_str)
           # 課金時間計算なので、1時間に満たないものも1と数える

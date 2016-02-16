@@ -5,6 +5,7 @@ module Ruboty
     module Helpers
       class Ec2
         def initialize(message, channel = nil) 
+          puts "Ruboty::Ec2::Helpers::Ec2.initialize called"
           @util      = Util.new(message, channel)
           @subnet_id = @util.get_subnet_id
           @ec2       = ::Aws::EC2::Client.new(@util.get_aws_config)
@@ -12,18 +13,21 @@ module Ruboty
         end
 
         def exist_subnet?(subnet_id)
+          puts "Ruboty::Ec2::Helpers::Ec2.exist_subnet? called"
           params = {:filters => [{:name => "subnet-id", values: [subnet_id]}]}
           resp   = @ec2.describe_subnets(params)
           resp.subnets.size > 0 ? true : false
         end
 
         def get_subnet_cidr(subnet_id)
+          puts "Ruboty::Ec2::Helpers::Ec2.get_subnet_cidr called"
           params = {:filters => [{:name => "subnet-id", values: [subnet_id]}]}
           resp   = @ec2.describe_subnets(params)
           resp.subnets.first.cidr_block
         end
 
         def get_ins_infos(ins_name = nil)
+          puts "Ruboty::Ec2::Helpers::Ec2.get_ins_infos called"
           params     = {:filters => [{:name => "subnet-id", :values => [@subnet_id]}]}
           params[:filters] << {:name => "tag:Name", :values => [ins_name]} if !ins_name.nil?
 
@@ -63,6 +67,7 @@ module Ruboty
         end
 
         def get_arc_infos(ins_name = nil)
+          puts "Ruboty::Ec2::Helpers::Ec2.get_arc_infos called"
           params    = {:filters => [{:name => "is-public", values: ["false"]}]}
           if !ins_name.nil?
             params[:filters] << {:name => "tag:Name", :values => [ins_name]}
@@ -91,6 +96,7 @@ module Ruboty
         end
 
         def get_ami_infos
+          puts "Ruboty::Ec2::Helpers::Ec2.get_ami_infos called"
           params    = {:filters => [{:name => "is-public", values: ["false"]}]}
           resp      = @ec2.describe_images(params)
           ami_infos = {}
@@ -118,6 +124,7 @@ module Ruboty
         end
 
         def create_ins(_params)
+          puts "Ruboty::Ec2::Helpers::Ec2.create_ins called"
           params = {
             :image_id => _params[:image_id],
             :min_count => 1, :max_count => 1,
@@ -142,21 +149,25 @@ module Ruboty
         end
 
         def stop_ins(ins_ids)
+          puts "Ruboty::Ec2::Helpers::Ec2.stop_ins called"
           params = {:instance_ids => ins_ids}
           @ec2.stop_instances(params)
         end
 
         def start_ins(ins_ids)
+          puts "Ruboty::Ec2::Helpers::Ec2.start_ins called"
           params = {:instance_ids => ins_ids}
           @ec2.start_instances(params)
         end
 
         def destroy_ins(ins_id)
+          puts "Ruboty::Ec2::Helpers::Ec2.destroy_ins called"
           params = {:instance_ids => [ins_id]}
           @ec2.terminate_instances(params)
         end
 
         def update_tags(ins_ids, tag_hash)
+          puts "Ruboty::Ec2::Helpers::Ec2.update_tags called"
           # リトライ回数
           cnt_retry = 0
 
@@ -172,6 +183,7 @@ module Ruboty
         end
 
         def delete_tags(ins_ids, tag_keys)
+          puts "Ruboty::Ec2::Helpers::Ec2.delete_tags called"
           params = {:resources => ins_ids, :tags => []}
           tag_keys.each do |key|
             params[:tags] << {:key => key}
@@ -180,6 +192,7 @@ module Ruboty
         end
 
         def wait_for_associate_public_ip(ins_name)
+          puts "Ruboty::Ec2::Helpers::Ec2.wait_for_associate_public_ip called"
           started_at = Time.now
           public_ip  = nil
           while public_ip.nil? do
@@ -193,6 +206,7 @@ module Ruboty
         end
 
         def wait_for_associate_multi_public_ip(ins_names)
+          puts "Ruboty::Ec2::Helpers::Ec2.wait_for_associate_multi_public_ip called"
           started_at = Time.now
           ins_count = ins_names.size
           ins_pip_hash = {}
@@ -212,6 +226,7 @@ module Ruboty
         end
 
         def create_ami(ins_id, ins_name)
+          puts "Ruboty::Ec2::Helpers::Ec2.create_ami called"
           ami_name = "#{ins_name}_#{Time.now.strftime('%Y%m%d%H%M%S')}"
           params   = {:instance_id => ins_id, :name => ami_name}
           ami      = @ec2.create_image(params)
@@ -219,17 +234,20 @@ module Ruboty
         end
 
         def destroy_ami(arc_id, snapshot_id)
+          puts "Ruboty::Ec2::Helpers::Ec2.destroy_ami called"
           @ec2.deregister_image(image_id: arc_id)
           @ec2.delete_snapshot(snapshot_id: snapshot_id)
         end
 
         def get_vpc_id
+          puts "Ruboty::Ec2::Helpers::Ec2.get_vpc_id called"
           params = {:filters => [{:name => "subnet-id", values: [@subnet_id]}]}
           resp   = @ec2.describe_subnets(params)
           resp.subnets.first.vpc_id
         end
 
         def get_sg_infos
+          puts "Ruboty::Ec2::Helpers::Ec2.get_sg_infos called"
           params   = {:filters => [{:name => "vpc-id", values: [get_vpc_id]}]}
           resp     = @ec2.describe_security_groups(params)
           sg_infos = {}
@@ -240,11 +258,13 @@ module Ruboty
         end
 
         def update_groups(ins_id, sg_ids)
+          puts "Ruboty::Ec2::Helpers::Ec2.update_groups called"
           params   = {:instance_id => ins_id, :groups => sg_ids}
           @ec2.modify_instance_attribute(params)
         end   
 
         def add_permission(ami_id, account_id)
+          puts "Ruboty::Ec2::Helpers::Ec2.add_permission called"
           params   = {:image_id => ami_id,
                       :attribute => "launchPermission",
                       :operation_type => "add",
@@ -253,6 +273,7 @@ module Ruboty
         end
 
         def delete_permission(ami_id, account_id)
+          puts "Ruboty::Ec2::Helpers::Ec2.delete_permission called"
           params   = {:image_id => ami_id,
                       :attribute => "launchPermission",
                       :operation_type => "remove",

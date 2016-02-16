@@ -5,6 +5,7 @@ module Ruboty
     module Helpers
       class Route53
         def initialize(message, channel = nil) 
+          puts "Ruboty::Ec2::Helpers::Route53.initialize called"
           @util    = Util.new(message, channel)
           @domain  = @util.get_domain
           @r53     = ::Aws::Route53::Client.new(@util.get_aws_config)
@@ -13,6 +14,7 @@ module Ruboty
         end
 
         def get_zone_id
+          puts "Ruboty::Ec2::Helpers::Route53.get_zone_id called"
           zone_id = nil
           zones = @r53.list_hosted_zones[:hosted_zones]
           zones.each do |zone|
@@ -25,6 +27,7 @@ module Ruboty
         end
 
         def get_record_sets
+          puts "Ruboty::Ec2::Helpers::Route53.get_record_sets called"
           params       = {:hosted_zone_id => @zone_id}
           record_sets  = @r53.list_resource_record_sets(params)[:resource_record_sets]
           rset_infos = {}
@@ -44,6 +47,7 @@ module Ruboty
         end
 
         def update_record_sets(upd_infos)
+          puts "Ruboty::Ec2::Helpers::Route53.update_record_sets called"
           record_sets = []
           upd_infos.each do |ins_name, public_ip|
             record_sets << {
@@ -78,6 +82,7 @@ module Ruboty
         end
 
         def delete_record_sets(del_infos)
+          puts "Ruboty::Ec2::Helpers::Route53.delete_record_sets called"
           # check exist fqdn
           params = {
             :hosted_zone_id => @zone_id
