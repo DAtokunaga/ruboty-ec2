@@ -195,13 +195,17 @@ module Ruboty
           puts "Ruboty::Ec2::Helpers::Ec2.wait_for_associate_public_ip called"
           started_at = Time.now
           public_ip  = nil
+          puts "  associate public ip check start"
           while public_ip.nil? do
-            sleep(1)
+            sleep(3)
             ins_info  = get_ins_infos(ins_name)
             public_ip = ins_info[ins_name][:public_ip] if !ins_info[ins_name].nil?
+            elpsd_sec = (Time.now - started_at).to_i
+            puts "    ... #{elpsd_sec} seconds elapsed"
             break if ins_info.empty? or (Time.now - started_at).to_i > 90
           end
           raise "インスタンス[#{ins_name}]が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ" if public_ip.nil?
+          puts "  associate public ip OK [#{public_ip}]"
           public_ip
         end
 

@@ -53,7 +53,10 @@ module Ruboty
 
           # 使用するIPアドレスを取得
           subnet_id    = util.get_subnet_id
-          ipaddr_range = util.usable_iprange(ec2.get_subnet_cidr(subnet_id))
+          puts "  subnet_id [#{subnet_id}"
+          cidr_block   = ec2.get_subnet_cidr(subnet_id)
+          puts "  cidr_block[#{cidr_block}"
+          ipaddr_range = util.usable_iprange(cidr_block)
           ipaddr_used  = []
           arc_infos.each do |name, arc|
             ipaddr_used << arc[:ip_addr]
@@ -63,21 +66,26 @@ module Ruboty
           end
           # 使用可能なIPをランダムに払い出す
           private_ip = (ipaddr_range - ipaddr_used).sample
+          puts "  private_ip[#{private_ip}"
 
           # 作成するインスタンスタイプ判定（HVM or PVにより変わります）
           ins_type = (ami_infos[ami_id][:virtual_type] == "hvm" ?
                       Ruboty::Ec2::Const::InsTypeHVM :
                       Ruboty::Ec2::Const::InsTypePV)
+          puts "  ins_type  [#{ins_type}]"
 
           # インスタンス作成
           params = {:image_id => ami_id, :private_ip_address => private_ip, :instance_type => ins_type}
+          puts "  ins create params => #{params}"
           ins_id = ec2.create_ins(params)
+          puts "  ins_id[#{ins_id}]"
           # タグ付け
           params =  {"Name"  => ins_name, "Owner" => _caller,
                      "LastUsedTime" => Time.now.to_s, "ParentId" => ami_id}
           params["Spec"]  = ami_infos[ami_id][:spec]  if !ami_infos[ami_id][:spec].nil?
           params["Desc"]  = ami_infos[ami_id][:desc]  if !ami_infos[ami_id][:desc].nil?
           params["Param"] = ami_infos[ami_id][:param] if !ami_infos[ami_id][:param].nil?
+          puts "  tags params => #{params}"
           ec2.update_tags([ins_id], params)
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
@@ -85,6 +93,7 @@ module Ruboty
 
           # パブリックIPを取得
           public_ip = ec2.wait_for_associate_public_ip(ins_name)
+          puts "  public_ip [#{public_ip}]"
 
           # DNS設定
           r53 = Ruboty::Ec2::Helpers::Route53.new(message)

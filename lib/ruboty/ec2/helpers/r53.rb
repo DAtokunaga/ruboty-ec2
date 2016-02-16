@@ -55,7 +55,7 @@ module Ruboty
               :resource_record_set => {
                 :name     => "#{ins_name}.#{@domain}",
                 :type     => "A",
-                :ttl      => 60,
+                :ttl      => 10,
                 :resource_records => [{:value  => public_ip}]
               }
             }
@@ -64,7 +64,7 @@ module Ruboty
               :resource_record_set => {
                 :name     => "#{ins_name}.#{@domain}",
                 :type     => "MX",
-                :ttl      => 60,
+                :ttl      => 10,
                 :resource_records => [{
                   :value  => "10 #{ins_name}.#{@domain}."
                 }]
@@ -99,7 +99,7 @@ module Ruboty
               :resource_record_set => {
                 :name     => "#{ins_name}.#{@domain}",
                 :type     => "A",
-                :ttl      => 60,
+                :ttl      => 10,
                 :resource_records => [{:value => del_infos[ins_name]}]
               }
             }
@@ -108,7 +108,7 @@ module Ruboty
               :resource_record_set => {
                 :name     => "#{ins_name}.#{@domain}",
                 :type     => "MX",
-                :ttl      => 60,
+                :ttl      => 10,
                 :resource_records => [{:value => "10 #{ins_name}.#{@domain}"}]
               }
             }

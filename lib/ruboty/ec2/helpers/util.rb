@@ -139,7 +139,7 @@ module Ruboty
         end
 
         def get_state_mark(_state)
-          puts "Ruboty::Ec2::Helpers::Util.get_state_mark called"
+          #puts "Ruboty::Ec2::Helpers::Util.get_state_mark called"
           case _state
             when "pending"       then state = "\u{25B2}"
             when "running"       then state = "\u{25BA}"

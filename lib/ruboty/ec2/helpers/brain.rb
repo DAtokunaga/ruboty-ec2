@@ -35,7 +35,7 @@ module Ruboty
           puts "Ruboty::Ec2::Helpers::Brain.save_os_type called"
           _os_type = (os_type == "centos" ? "centos" : "rhel")
           yyyymm = Time.now.strftime('%Y%m') if yyyymm.nil?
-          puts "  ins_name[#{ins_name}]\n  os_type[#{_os_type}]\n  yyyymm[#{yyyymm}]"
+          puts "  ins_name[#{ins_name}]\n  os_type [#{_os_type}]\n  yyyymm  [#{yyyymm}]"
           @brain[ins_name] ||= {}
           @brain[ins_name][:os_type] ||= {}
           @brain[ins_name][:os_type][yyyymm] = _os_type
