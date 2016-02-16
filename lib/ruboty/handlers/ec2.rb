@@ -20,6 +20,8 @@ require "ruboty/ec2/actions/access"
 module Ruboty
   module Handlers
     class Ec2 < Base
+      $stdout.sync = true
+
       # 自動起動／停止系
       on(/ec2 *autostart +(?<cmd>exec|list|add|del) *(?<ins_name>\S+)*\z/,
                                               name: 'autostart', description: 'manage auto-start instances')

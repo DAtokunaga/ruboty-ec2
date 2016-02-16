@@ -3,8 +3,9 @@ module Ruboty
     module Actions
       class Create < Ruboty::Actions::Base
         def call
-          puts "ec2 create called"
+          puts "ec2 create starting..."
           create
+          puts "ec2 create finished."
         end
 
         private
@@ -17,8 +18,13 @@ module Ruboty
           # チャットコマンド情報取得
           ins_name = message[:ins_name]
           ami_id   = (message[:ami_id].nil? ? util.get_default_ami : message[:ami_id])
-          caller   = util.get_caller
+          _caller   = util.get_caller
+          puts "Input Parameter:"
+          puts "  ins_name[#{ins_name}]"
+          puts "  ami_id  [#{ami_id}]"
+          puts "  caller  [#{_caller}]"
 
+exit
           ## 事前チェック ##
 
           # インスタンス名チェック
@@ -67,7 +73,7 @@ module Ruboty
           params = {:image_id => ami_id, :private_ip_address => private_ip, :instance_type => ins_type}
           ins_id = ec2.create_ins(params)
           # タグ付け
-          params =  {"Name"  => ins_name, "Owner" => caller,
+          params =  {"Name"  => ins_name, "Owner" => _caller,
                      "LastUsedTime" => Time.now.to_s, "ParentId" => ami_id}
           params["Spec"]  = ami_infos[ami_id][:spec]  if !ami_infos[ami_id][:spec].nil?
           params["Desc"]  = ami_infos[ami_id][:desc]  if !ami_infos[ami_id][:desc].nil?
