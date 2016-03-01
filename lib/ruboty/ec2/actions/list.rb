@@ -7,7 +7,7 @@ module Ruboty
         def call
           puts "ec2 list #{message[:resource]} called"
           resource = message[:resource]
-          instance_list if !resource
+          my_ins_list   if !resource
           instance_list if resource == "instance"
           archive_list  if resource == "archive"
           ami_list      if resource == "ami"
@@ -78,6 +78,16 @@ module Ruboty
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
+        end
+
+        def my_ins_list
+          util  = Ruboty::Ec2::Helpers::Util.new(message)
+          owner = util.get_caller
+
+          message.reply("owned by '#{owner}'\n[インスタンス]\n")
+          instance_list(" #{owner}")
+          message.reply("[アーカイブ]\n")
+          archive_list(" #{owner}")
         end
 
         def filtered_list
