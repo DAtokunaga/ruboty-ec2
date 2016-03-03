@@ -16,6 +16,7 @@ require "ruboty/ec2/actions/autostop"
 require "ruboty/ec2/actions/copy"
 require "ruboty/ec2/actions/usage"
 require "ruboty/ec2/actions/access"
+require "ruboty/ec2/actions/rename"
 
 module Ruboty
   module Handlers
@@ -34,8 +35,10 @@ module Ruboty
       on /ec2 *stop +(?<ins_name>\S+)\z/,     name: 'stop',      description: 'stop instance'
       on /ec2 *start +(?<ins_name>\S+)\z/,    name: 'start',     description: 'start instance'
       on /ec2 *destroy +(?<ins_name>\S+)\z/,  name: 'destroy',   description: 'destroy instance'
-      on /ec2 *archive *(?<ins_name>\S+)*\z/, name: 'archive', description: 'archive instance'
+      on /ec2 *archive *(?<ins_name>\S+)*\z/, name: 'archive',   description: 'archive instance'
       on /ec2 *extract +(?<ins_name>\S+)\z/,  name: 'extract',   description: 'extract backed up instance'
+      on /ec2 *rename +(?<old_ins_name>\S+) +(?<new_ins_name>\S+)\z/,
+                                              name: 'rename',    description: 'rename instance name'
       on /ec2 *copy +(?<from_arc>\S+) +(?<to_ins>\S+)\z/,
                                               name: 'copy',      description: 'copy instance'
       on /ec2 *access +(?<cmd>give|revoke) +(?<ins_name>\S+) *(?<sg_name>\S+)*\z/,
@@ -104,6 +107,10 @@ module Ruboty
 
       def usage(message)
         Ruboty::Ec2::Actions::Usage.new(message).call
+      end
+
+      def rename(message)
+        Ruboty::Ec2::Actions::Rename.new(message).call
       end
     end
   end
