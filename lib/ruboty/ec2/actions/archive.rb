@@ -35,7 +35,9 @@ module Ruboty
 
           # アーカイブ処理実行
           ins_archive(ins_name, ins_info)
-          message.reply("インスタンス[#{ins_name}]をアーカイブしたよ")
+          msg  = "インスタンス[#{ins_name}]をアーカイブしたよ.\n"
+          msg << "10分くらいかかるよ. 気長に待っててね."
+          message.reply(msg)
         rescue => e
           message.reply(e.message)
         end
