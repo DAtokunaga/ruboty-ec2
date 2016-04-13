@@ -138,6 +138,13 @@ module Ruboty
           iprange_array
         end
 
+        def valid_ip?(ip_str)
+          IPAddr.new(ip_str)
+          true
+        rescue => e
+          false
+        end
+
         def get_state_mark(_state)
           #puts "Ruboty::Ec2::Helpers::Util.get_state_mark called"
           case _state

@@ -256,9 +256,61 @@ module Ruboty
           resp     = @ec2.describe_security_groups(params)
           sg_infos = {}
           resp.security_groups.each do |sg|
-            sg_infos[sg.group_name] = sg.group_id
+            sg_info = {}
+            sg_name = sg.group_name 
+            sg_info[:group_name] = sg_name
+            sg_info[:group_id]   = sg.group_id
+            ip_perms = []
+            sg.ip_permissions.each do |perm|
+              next if perm.from_port != 443
+              next if perm.to_port   != 443
+              perm.ip_ranges.each do |range|
+                ip_perms << range.cidr_ip
+              end
+            end
+            sg_info[:ip_perms] = ip_perms
+            sg_infos[sg_name]  = sg_info
           end
           sg_infos
+        end
+
+        def add_sg(sg_name, ip_ranges)
+          # セキュリティグループ作成(許可IP追加は別途実施)
+          params = {:vpc_id      => get_vpc_id,
+                    :group_name  => sg_name,
+                    :description => sg_name}
+          resp   = @ec2.create_security_group(params)
+          sg_id  = resp.group_id
+
+          # 作成したセキュリティグループに許可IPを追加
+          add_ip_ranges = []
+          ip_ranges.each do |ip_range|
+            add_ip_ranges << {:cidr_ip => ip_range}
+          end
+          params = {
+            :group_id => sg_id,
+            :ip_permissions => [
+              {
+                :ip_protocol => 'tcp',
+                :ip_ranges   => add_ip_ranges,
+                :from_port   => 443,
+                :to_port     => 443
+              },
+              {
+                :ip_protocol => 'tcp',
+                :ip_ranges   => add_ip_ranges,
+                :from_port   => 8443,
+                :to_port     => 8443
+              },
+            ]
+          }
+          @ec2.authorize_security_group_ingress(params)
+        end
+
+        def del_sg(sg_id)
+          # セキュリティグループ削除
+          params = {:group_id => sg_id}
+          @ec2.delete_security_group(params)
         end
 
         def update_groups(ins_id, sg_ids)

@@ -1,5 +1,3 @@
-require "aws-sdk"
-
 module Ruboty
   module Ec2
     module Actions

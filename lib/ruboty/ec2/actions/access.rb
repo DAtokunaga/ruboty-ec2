@@ -29,21 +29,21 @@ module Ruboty
           # 既存設定有無チェック
           ins_info = ins_infos[ins_name]
           if ins_info[:groups].size == 2
-            raise "インスタンス[#{ins_name}]は既にアクセス許可設定済みだよ"
+            raise "インスタンス[#{ins_name}]は既にアクセス許可ポリシー設定済みだよ"
           end
 
           ## 指定されたSGの存在チェック
           sg_infos = ec2.get_sg_infos
-          raise "セキュリティグループ[#{sg_name}]が見つからないよ" if !sg_infos.keys.include?(sg_name)
+          raise "アクセス許可ポリシー[#{sg_name}]が見つからないよ" if !sg_infos.keys.include?(sg_name)
 
           ## メイン処理 ##
 
           # インスタンスにSGを追加設定
           sg_ids =  ins_info[:groups].values
-          sg_ids << sg_infos[sg_name]
+          sg_ids << sg_infos[sg_name][:group_id]
           ins_id =  ins_info[:instance_id]
           ec2.update_groups(ins_id, sg_ids)
-          reply_msg = "インスタンス[#{ins_name}]にアクセス許可[#{sg_name}]を設定したよ"
+          reply_msg = "インスタンス[#{ins_name}]にアクセス許可ポリシー[#{sg_name}]を設定したよ"
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
@@ -67,21 +67,21 @@ module Ruboty
           # 既存設定有無チェック
           ins_info = ins_infos[ins_name]
           if ins_info[:groups].size == 1
-            raise "インスタンス[#{ins_name}]はアクセス許可が設定されていないよ"
+            raise "インスタンス[#{ins_name}]はアクセス許可ポリシーが設定されていないよ"
           end
 
           ## 指定されたSGの存在チェック
           sg_infos = ec2.get_sg_infos
-          raise "セキュリティグループ[#{sg_name}]が見つからないよ" if !sg_infos.keys.include?(sg_name)
+          raise "アクセス許可ポリシー[#{sg_name}]が見つからないよ" if !sg_infos.keys.include?(sg_name)
 
           ## メイン処理 ##
 
-          # インスタンスにSGを追加設定
+          # インスタンスからSG削除設定
           sg_ids =  ins_info[:groups].values
-          sg_ids.delete(sg_infos[sg_name])
+          sg_ids.delete(sg_infos[sg_name][:group_id])
           ins_id =  ins_info[:instance_id]
           ec2.update_groups(ins_id, sg_ids)
-          reply_msg = "インスタンス[#{ins_name}]のアクセス許可設定[#{sg_name}]を解除したよ"
+          reply_msg = "インスタンス[#{ins_name}]のアクセス許可ポリシー[#{sg_name}]を解除したよ"
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)

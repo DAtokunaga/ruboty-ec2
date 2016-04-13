@@ -17,6 +17,7 @@ require "ruboty/ec2/actions/copy"
 require "ruboty/ec2/actions/usage"
 require "ruboty/ec2/actions/access"
 require "ruboty/ec2/actions/rename"
+require "ruboty/ec2/actions/permit"
 
 module Ruboty
   module Handlers
@@ -42,7 +43,7 @@ module Ruboty
       on /ec2 *copy +(?<from_arc>\S+) +(?<to_ins>\S+)\z/,
                                               name: 'copy',      description: 'copy instance'
       on /ec2 *access +(?<cmd>give|revoke) +(?<ins_name>\S+) *(?<sg_name>\S+)*\z/,
-                                              name: 'access',    description: 'manage permitted source ip'
+                                              name: 'access',    description: 'manage access permit'
 
       # インスタンスメタ情報管理系
       on /ec2 *detail +(?<ins_name>\S+)\z/,   name: 'detail',    description: 'show instance/archive/AMI detail information'
@@ -52,6 +53,8 @@ module Ruboty
                                               name: 'usage',     description: 'show instance usage of specified month')
       on(/ec2 *edit +(?<tag_name>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/m,
                                               name: 'edit',      description: 'edit data of spec, desc and param')
+      on(/ec2 *permit +(?<cmd>list|add|del) *(?<sg_name>\S+)* *(?<ip_csv>\S+)* *\z/,
+                                              name: 'permit',    description: 'manage permitted source ip list')
 
       def create(message)
         Ruboty::Ec2::Actions::Create.new(message).call
@@ -111,6 +114,10 @@ module Ruboty
 
       def rename(message)
         Ruboty::Ec2::Actions::Rename.new(message).call
+      end
+
+      def permit(message)
+        Ruboty::Ec2::Actions::Permit.new(message).call
       end
     end
   end
