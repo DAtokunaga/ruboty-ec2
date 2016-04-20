@@ -40,6 +40,9 @@ module Ruboty
             message.reply("インスタンス[#{ins_name}]を削除したよ")
           else
             arc_info = arc_infos[ins_name]
+            if !arc_info[:frozen].nil? and !arc_info[:frozen].empty?
+              raise "アーカイブ[#{ins_name}]は凍結されてるよ. 先に解除(thaw)してね"
+            end
             if caller != arc_info[:owner]
               raise "アーカイブ[#{ins_name}]を削除できるのはオーナー[#{arc_info[:owner]}]だけだよ"
             end

@@ -48,11 +48,13 @@ module Ruboty
           msg_list  = ""
           arc_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
             next if "#{name} #{ami[:owner]}".index(filter_str).nil? if !filter_str.nil?
-            msg_list << sprintf("\n[%9s] %-15s | %-12s | %-12s | %s",
-                         ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], ami[:owner])
+            frozen = (!ami[:frozen].nil? and !ami[:frozen].empty?) ? "Y" : ""
+            msg_list << sprintf("\n[%9s] %-15s | %-12s | %-12s | %1s | %s",
+                         ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], frozen, ami[:owner])
           end
-          header_str = sprintf("[AMIStatus]%-15s|%-12s|%-12s|%s",
-                                "- InsName -------", "- UsingAMI ---",  "- PrivateIp --", "- Owner ---")
+          header_str = sprintf("[AMIStatus]%-15s|%-12s|%-12s|%s|%s",
+                                "- InsName -------", "- UsingAMI ---",  "- PrivateIp --",
+                                " F ", "- Owner ---")
           reply_msg  = "```\n#{header_str}#{msg_list}```"
           reply_msg  = "アーカイブが見つからないよ" if msg_list.empty?
           message.reply(reply_msg)

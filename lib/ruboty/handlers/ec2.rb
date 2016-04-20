@@ -18,6 +18,8 @@ require "ruboty/ec2/actions/usage"
 require "ruboty/ec2/actions/access"
 require "ruboty/ec2/actions/rename"
 require "ruboty/ec2/actions/permit"
+require "ruboty/ec2/actions/freeze"
+require "ruboty/ec2/actions/thaw"
 
 module Ruboty
   module Handlers
@@ -55,6 +57,8 @@ module Ruboty
                                               name: 'edit',      description: 'edit data of spec, desc and param')
       on(/ec2 *permit +(?<cmd>list|add|del) *(?<sg_name>\S+)* *(?<ip_csv>\S+)* *\z/,
                                               name: 'permit',    description: 'manage permitted source ip list')
+      on /ec2 *freeze +(?<ins_name>\S+)\z/,   name: 'freeze',    description: 'freeze archive'
+      on /ec2 *thaw +(?<ins_name>\S+)\z/,     name: 'thaw',      description: 'thaw frozen archive'
 
       def create(message)
         Ruboty::Ec2::Actions::Create.new(message).call
@@ -118,6 +122,14 @@ module Ruboty
 
       def permit(message)
         Ruboty::Ec2::Actions::Permit.new(message).call
+      end
+
+      def freeze(message)
+        Ruboty::Ec2::Actions::Freeze.new(message).call
+      end
+
+      def thaw(message)
+        Ruboty::Ec2::Actions::Thaw.new(message).call
       end
     end
   end

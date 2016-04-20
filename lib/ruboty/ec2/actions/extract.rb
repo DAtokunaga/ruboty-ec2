@@ -27,6 +27,9 @@ module Ruboty
           arc_info = arc_infos[ins_name]
           raise "アーカイブ[#{ins_name}]は作成中だよ. もう少し待っててね" if arc_info[:state] == "pending"
           raise "アーカイブ[#{ins_name}]は今処理中で使えないっす..." if arc_info[:state] != "available"
+          if !arc_info[:frozen].nil? and !arc_info[:frozen].empty?
+            raise "アーカイブ[#{ins_name}]は凍結されてるよ. 先に解除(thaw)してね"
+          end
 
           ## メイン処理 ##
 
