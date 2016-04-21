@@ -88,6 +88,8 @@ module Ruboty
           instance_list(" #{owner}")
           message.reply("[アーカイブ]\n")
           archive_list(" #{owner}")
+        rescue => e
+          message.reply(e.message)
         end
 
         def filtered_list
@@ -96,6 +98,8 @@ module Ruboty
           instance_list(word)
           message.reply("[アーカイブ]\n")
           archive_list(word)
+        rescue => e
+          message.reply(e.message)
         end
 
       end

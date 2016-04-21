@@ -51,12 +51,17 @@ module Ruboty
             next if cl.index("handlers").nil? or !cmd_name.empty?
             cmd_name = cl[/`([^']*)'/, 1]
           end
-          # superadmins
-          admin_env = ENV["RUBOTY_EC2_SUPER_ADMIN"]
-          admins    = (admin_env.nil? ? [] : admin_env.split(","))
-
           from_ch  = get_channel
-          restrict_list  = ENV["RUBOTY_EC2_RESTRICT_CMD_#{from_ch}"] ||= ""
+
+          # superadmins
+          super_admin_env = ENV["RUBOTY_EC2_SUPER_ADMIN"]
+          admins          = (super_admin_env.nil? ? [] : super_admin_env.split(","))
+
+          # admins for each channels
+          ch_admin_env    = ENV["RUBOTY_EC2_ADMIN_#{from_ch}"]
+          ch_admin_env.split(",").each{|env| admins << env} if !ch_admin_env.nil?
+
+          restrict_list  = ENV["RUBOTY_EC2_RESTRICT_CMD_#{from_ch}"] || ""
           return if restrict_list.empty?
           restrict_array = restrict_list.split(",")
           restrict_hash  = {}
