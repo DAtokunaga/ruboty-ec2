@@ -16,7 +16,24 @@ module Ruboty
 
         def instance_list(filter_str = nil)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
-          ins_infos = ec2.get_ins_infos
+          ins_infos   = ec2.get_ins_infos
+
+          # サマリ表示情報取得・集計
+          ins_summary = {'total_count' => 0}
+          ins_filterd = {'total_count' => 0}
+          ins_infos.each do |name, ins|
+            ins_summary['total_count']  += 1
+            ins_summary[ins[:state]] ||= 0
+            ins_summary[ins[:state]]  += 1
+            if !filter_str.nil?
+              next if "#{name} #{ins[:owner]}".index(filter_str).nil?
+              ins_filterd['total_count']  += 1
+              ins_filterd[ins[:state]] ||= 0
+              ins_filterd[ins[:state]]  += 1
+            end
+          end
+
+          # 応答メッセージ文字列生成
           msg_list  = ""
           ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ins|
             sg_names = ""
@@ -31,7 +48,21 @@ module Ruboty
                                  ins[:state_mark], name, ins[:private_ip], ins[:public_ip],
                                  sg_names, ins[:parent_id], ins[:instance_type], ins[:owner])
           end
-          header_str = "↓凡例．[\u{25B2}]->pending, [\u{25BA}]->running, [\u{25BC}]->shutting-down/stopping, [\u{25A0}]->stopped\n"
+          header_str  = "Summary -> total:#{ins_summary['total_count']}"
+          header_str << ", [\u{25BA}]running:#{ins_summary['running']}" if !ins_summary['running'].nil?
+          header_str << ", [\u{25A0}]stopped:#{ins_summary['stopped']}" if !ins_summary['stopped'].nil?
+          header_str << ", [\u{25B2}]pending:#{ins_summary['pending']}" if !ins_summary['pending'].nil?
+          header_str << ", [\u{25BC}]shutting-down:#{ins_summary['shutting-down']}" if !ins_summary['shutting-down'].nil?
+          header_str << ", [\u{25BC}]stopping:#{ins_summary['stopping']}" if !ins_summary['stopping'].nil?
+          if !filter_str.nil?
+            header_str << " / Filtered -> total:#{ins_filterd['total_count']}"
+            header_str << ", running:#{ins_filterd['running']}" if !ins_filterd['running'].nil?
+            header_str << ", stopped:#{ins_filterd['stopped']}" if !ins_filterd['stopped'].nil?
+            header_str << ", pending:#{ins_filterd['pending']}" if !ins_filterd['pending'].nil?
+            header_str << ", shutting-down:#{ins_filterd['shutting-down']}" if !ins_filterd['shutting-down'].nil?
+            header_str << ", stopping:#{ins_filterd['stopping']}" if !ins_filterd['stopping'].nil?
+          end
+          header_str << "\n"
           header_str << sprintf("[-] %s|%s|%s|%s|%s|%s|%s",
                                 "- InsName ------", "- PrivateIp --", "- PublicIp -----",
                                 " Access ", "- UsingAMI ---", "- Type ----", "- Owner ---")
@@ -45,6 +76,23 @@ module Ruboty
         def archive_list(filter_str = nil)
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           arc_infos = ec2.get_arc_infos
+
+          # サマリ表示情報取得・集計
+          arc_summary = {'total_count' => 0}
+          arc_filterd = {'total_count' => 0}
+          arc_infos.each do |name, ami|
+            arc_summary['total_count']  += 1
+            arc_summary[ami[:state]] ||= 0
+            arc_summary[ami[:state]]  += 1
+            if !filter_str.nil?
+              next if "#{name} #{ami[:owner]}".index(filter_str).nil?
+              arc_filterd['total_count'] += 1
+              arc_filterd[ami[:state]] ||= 0
+              arc_filterd[ami[:state]]  += 1
+            end
+          end
+
+          # 応答メッセージ文字列生成
           msg_list  = ""
           arc_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
             next if "#{name} #{ami[:owner]}".index(filter_str).nil? if !filter_str.nil?
@@ -52,7 +100,18 @@ module Ruboty
             msg_list << sprintf("\n[%9s] %-15s | %-12s | %-12s | %1s | %s",
                          ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], frozen, ami[:owner])
           end
-          header_str = sprintf("[AMIStatus]%-15s|%-12s|%-12s|%s|%s",
+          header_str  = "Summary -> total:#{arc_summary['total_count']}"
+          header_str << ", available:#{arc_summary['available']}" if !arc_summary['available'].nil?
+          header_str << ", pending:#{arc_summary['pending']}" if !arc_summary['pending'].nil?
+          header_str << ", failed:#{arc_summary['failed']}" if !arc_summary['failed'].nil?
+          if !filter_str.nil?
+            header_str << " / Filtered -> total:#{arc_filterd['total_count']}"
+            header_str << ", available:#{arc_filterd['available']}" if !arc_filterd['available'].nil?
+            header_str << ", pending:#{arc_filterd['pending']}" if !arc_filterd['pending'].nil?
+            header_str << ", failed:#{arc_filterd['failed']}" if !arc_filterd['failed'].nil?
+          end
+          header_str << "\n"
+          header_str << sprintf("[AMIStatus]%-15s|%-12s|%-12s|%s|%s",
                                 "- InsName -------", "- UsingAMI ---",  "- PrivateIp --",
                                 " F ", "- Owner ---")
           reply_msg  = "```\n#{header_str}#{msg_list}```"
