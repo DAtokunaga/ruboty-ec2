@@ -9,6 +9,7 @@ module Ruboty
           @util      = Util.new(message, channel)
           @subnet_id = @util.get_subnet_id
           @ec2       = ::Aws::EC2::Client.new(@util.get_aws_config)
+          @message   = message
           raise "SubnetIDが間違っているよ" if !exist_subnet?(@subnet_id)
         end
 
@@ -232,9 +233,35 @@ module Ruboty
         def create_ami(ins_id, ins_name)
           puts "Ruboty::Ec2::Helpers::Ec2.create_ami called"
           ami_name = "#{ins_name}_#{Time.now.strftime('%Y%m%d%H%M%S')}"
-          params   = {:instance_id => ins_id, :name => ami_name}
+          params   = {:instance_id => ins_id, :no_reboot => true, :name => ami_name}
           ami      = @ec2.create_image(params)
           ami_id   = ami[:image_id]
+        end
+
+        def wait_for_create_multi_ami(ami_names)
+          puts "Ruboty::Ec2::Helpers::Ec2.wait_for_create_multi_ami called"
+          started_at  = Time.now
+          ami_count   = ami_names.size
+          ami_id_hash = {}
+          while ami_count != ami_id_hash.size do
+            sleep(60)
+            ami_infos = get_arc_infos
+            ami_infos.each do |name, ami_info|
+              next if !ami_names.include?(name)
+              added_flag = ami_id_hash[name].nil?
+              if ami_info[:state] == "available"
+                ami_id_hash[name] = ami_info
+              end
+              if added_flag and !ami_id_hash[name].nil?
+                @message.reply("アーカイブ[#{ami_info[:name]}]作成完了")
+              end
+            end
+            break if (Time.now - started_at).to_i > 1800
+          end
+          if ami_count != ami_id_hash.size
+            raise "インスタンス#{ami_names-ami_id_hash.keys}のアーカイブ化に失敗したよー。。(´Д⊂ｸﾞｽﾝ"
+          end
+          ami_id_hash
         end
 
         def destroy_ami(arc_id, snapshot_id)

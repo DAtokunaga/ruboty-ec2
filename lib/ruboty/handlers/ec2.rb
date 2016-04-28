@@ -20,6 +20,7 @@ require "ruboty/ec2/actions/rename"
 require "ruboty/ec2/actions/permit"
 require "ruboty/ec2/actions/freeze"
 require "ruboty/ec2/actions/thaw"
+require "ruboty/ec2/actions/replicate"
 
 module Ruboty
   module Handlers
@@ -46,6 +47,8 @@ module Ruboty
                                               name: 'copy',      description: 'copy instance'
       on /ec2 *access +(?<cmd>give|revoke) +(?<ins_name>\S+) *(?<sg_name>\S+)*\z/,
                                               name: 'access',    description: 'manage access permit'
+      on /ec2 *replicate +(?<from_multiins>\S+) +(?<to_multiins>\S+)\z/,
+                                              name: 'replicate', description: 'create replica and set tag[ReplicaInfo]'
 
       # インスタンスメタ情報管理系
       on /ec2 *detail +(?<ins_name>\S+)\z/,   name: 'detail',    description: 'show instance/archive/AMI detail information'
@@ -130,6 +133,10 @@ module Ruboty
 
       def thaw(message)
         Ruboty::Ec2::Actions::Thaw.new(message).call
+      end
+
+      def replicate(message)
+        Ruboty::Ec2::Actions::Replicate.new(message).call
       end
     end
   end

@@ -62,6 +62,13 @@ module Ruboty
           # タグ付け
           params =  {"LastUsedTime" => Time.now.to_s}
           ec2.update_tags(stop_ins_ids, params)
+          # replicateした場合に付加されるタグを除去
+          replicated_ins_ids = []
+          params =  ["ReplicaInfo"]
+          stop_ins_infos.each do |name, ins|
+            replicated_ins_ids << ins[:instance_id] if !ins[:replica_info].nil?
+          end
+          ec2.delete_tags(replicated_ins_ids, params) if !replicated_ins_ids.empty?
 
           reply_msg  = "自動停止対象インスタンス#{stop_ins_infos.keys}を停止したよ."
           message.reply(reply_msg)

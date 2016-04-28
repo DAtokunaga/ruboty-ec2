@@ -56,6 +56,9 @@ module Ruboty
           # タグ[LastUsedTime]を現在時刻で上書き
           params =  {"LastUsedTime" => Time.now.to_s}
           ec2.update_tags([ins_id], params)
+          # replicateした場合に付加されるタグを除去
+          params =  ["ReplicaInfo"]
+          ec2.delete_tags([ins_id], params) if !ins_info[:replica_info].nil?
 
           message.reply("インスタンス[#{ins_name}]を停止したよ")
         rescue => e
