@@ -9,7 +9,6 @@ module Ruboty
           @util      = Util.new(message, channel)
           @subnet_id = @util.get_subnet_id
           @ec2       = ::Aws::EC2::Client.new(@util.get_aws_config)
-          @message   = message
           raise "SubnetIDが間違っているよ" if !exist_subnet?(@subnet_id)
         end
 
@@ -253,7 +252,7 @@ module Ruboty
                 ami_id_hash[name] = ami_info
               end
               if added_flag and !ami_id_hash[name].nil?
-                @message.reply("アーカイブ[#{ami_info[:name]}]作成完了")
+                puts "　アーカイブ[#{ami_info[:name]}]作成完了！"
               end
             end
             break if (Time.now - started_at).to_i > 1800

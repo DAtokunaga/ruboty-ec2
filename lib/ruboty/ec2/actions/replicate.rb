@@ -105,8 +105,9 @@ module Ruboty
           end
 
           # アーカイブ作成完了を待機
-          message.reply("一時アーカイブ#{fr_ins_array}を作成中です.")
+          message.reply("アーカイブ#{fr_ins_array}を作成中だよ")
           fr_arc_hash = ec2.wait_for_create_multi_ami(fr_ins_array)
+          message.reply("アーカイブ#{fr_ins_array}の作成が終わったよ")
 
           # 使用するIPアドレスを取得
           subnet_id    = util.get_subnet_id
@@ -151,12 +152,11 @@ module Ruboty
             # TODO: stop/autostop時にReplicaInfoがあれば削除する
             params["ReplicaInfo"] = "#{fr_ins_array.join(',')}:#{to_ins_array.join(',')}"
             ec2.update_tags([ins_id], params)
-            message.reply("インスタンス[#{to_ins_name}]を作成しました.")
-            sleep(60)
+            message.reply("インスタンス[#{to_ins_name}]を作成したよ")
           end
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
-          reply_msg  = "環境をレプリケートしてインスタンス#{to_ins_array}を起動したよ.\n"
+          reply_msg  = "#{fr_ins_array}環境をレプリケートしてインスタンス#{to_ins_array}を起動したよ.\n"
           reply_msg << "DNS設定完了までもう少し待っててね"
           message.reply(reply_msg)
 
@@ -172,8 +172,8 @@ module Ruboty
           fr_arc_hash.each do |name, arc_info|
             ec2.destroy_ami(arc_info[:image_id], arc_info[:snapshot_id])
           end
-          message.reply("一時アーカイブ#{fr_ins_array}を削除したよ.")
-          message.reply("サーバ間の設定調整完了後(10分程度)に利用できるようになるよ")
+          message.reply("アーカイブ#{fr_ins_array}を削除したよ.")
+          message.reply("サーバ間の設定調整(15分程度)後に利用できるようになるよ")
         rescue => e
           message.reply(e.message)
         end
