@@ -44,7 +44,7 @@ module Ruboty
         def get_ins_infos(yyyymm)
           puts "Ruboty::Ec2::Helpers::Brain.get_ins_infos called"
           ins_infos = {}
-          p @brain
+          #p @brain
           @brain.each do |ins_name, ins_data|
             next if ins_data[:uptime].nil?   or ins_data[:uptime][yyyymm].nil?
             next if ins_data[:ins_type].nil? or ins_data[:ins_type][yyyymm].nil?
