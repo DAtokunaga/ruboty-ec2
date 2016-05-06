@@ -121,7 +121,6 @@ module Ruboty
           end
 
           # アーカイブからインスタンス作成
-          start_ins_infos = []
           fr_ins_array.each_with_index do |fr_ins_name, idx|
             to_ins_name = to_ins_array[idx]
 
@@ -129,10 +128,8 @@ module Ruboty
             private_ip   = (ipaddr_range - ipaddr_used).sample
             ipaddr_used << private_ip
 
-            # 作成するインスタンスタイプ判定（HVM or PVにより変わります）
-            ins_type = (ins_infos[fr_ins_name][:virtual_type] == "hvm" ?
-                        Ruboty::Ec2::Const::InsTypeHVM :
-                        Ruboty::Ec2::Const::InsTypePV)
+            # 作成するインスタンスタイプ取得（コピー元から引き継ぐ）
+            ins_type = ins_infos[fr_ins_name][:instance_type]
 
             # インスタンス作成
             arc_info = ec2.get_arc_infos(fr_ins_name)[fr_ins_name]
@@ -149,14 +146,13 @@ module Ruboty
             # インスタンスのTag[Param]にorchestrationをセット
             params["Param"] = "orchestration"
             # インスタンスにTag[ReplicaInfo]を追加
-            # TODO: stop/autostop時にReplicaInfoがあれば削除する
             params["ReplicaInfo"] = "#{fr_ins_array.join(',')}:#{to_ins_array.join(',')}"
             ec2.update_tags([ins_id], params)
             message.reply("インスタンス[#{to_ins_name}]を作成したよ")
           end
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
-          reply_msg  = "#{fr_ins_array}環境をレプリケートしてインスタンス#{to_ins_array}を起動したよ.\n"
+          reply_msg  = "#{fr_ins_array}環境のレプリカを作ってインスタンス#{to_ins_array}を起動したよ.\n"
           reply_msg << "DNS設定完了までもう少し待っててね"
           message.reply(reply_msg)
 
