@@ -69,14 +69,51 @@ module Ruboty
             _rstrct   = rstrct.split(":")
             _cmd_name = _rstrct[0]
             _rstrct.shift
-            restrict_hash[_cmd_name] = admins + _rstrct
+            restrict_hash[_cmd_name] = _rstrct + admins
           end
           if restrict_hash.include?(cmd_name)
-            raise "コマンド#{cmd_name}を実行する権限がないよ" if restrict_hash[cmd_name].empty?
+            append_msg = "コマンド実行権限についての詳細は、 #{ENV['SLACK_USERNAME']} ec2 privilege list コマンドで確認できるよ"
+            raise "#{cmd_name}コマンドを実行する権限がないよ\n#{append_msg}" if restrict_hash[cmd_name].empty?
             if !restrict_hash[cmd_name].include?(get_caller)
-              raise "コマンド#{cmd_name}は#{restrict_hash[cmd_name]}だけが実行できるよ. 頼んでみてね"
+              raise "#{cmd_name}コマンドは#{restrict_hash[cmd_name]}だけが実行できるよ. 頼んでみてね\n#{append_msg}"
             end
           end
+        end
+
+        def get_privilege
+          puts "Ruboty::Ec2::Helpers::Util.get_privilege called"
+          privileges = {:super_admin => [],
+                        :channel_admin => {},
+                        :restrict_command => {}}
+          channels   = ENV['RUBOTY_EC2_CHANNELS'].split(",")
+
+          # superadmins
+          super_admin_str = ENV["RUBOTY_EC2_SUPER_ADMIN"] || ""
+          super_admin_str.split(',').each do |super_admin|
+            privileges[:super_admin] << super_admin
+          end
+
+          # admins for each channels
+          channels.each do |ch|
+            privileges[:channel_admin][ch] = []
+            ch_admin_str = ENV["RUBOTY_EC2_ADMIN_#{ch}"] || ""
+            ch_admin_str.split(',').each do |ch_admin|
+              privileges[:channel_admin][ch] << ch_admin
+            end
+          end
+
+          # allow command for each channels, each user
+          channels.each do |ch|
+            privileges[:restrict_command][ch] = {}
+            restrict_list  = ENV["RUBOTY_EC2_RESTRICT_CMD_#{ch}"] || ""
+            restrict_list.split(",").each do |rstrct|
+              _rstrct   = rstrct.split(":")
+              _cmd_name = _rstrct[0]
+              _rstrct.shift
+              privileges[:restrict_command][ch][_cmd_name] = _rstrct
+            end
+          end
+          privileges
         end
 
         def get_aws_config

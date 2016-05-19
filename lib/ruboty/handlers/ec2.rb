@@ -21,6 +21,7 @@ require "ruboty/ec2/actions/permit"
 require "ruboty/ec2/actions/freeze"
 require "ruboty/ec2/actions/thaw"
 require "ruboty/ec2/actions/replicate"
+require "ruboty/ec2/actions/privilege"
 
 module Ruboty
   module Handlers
@@ -62,6 +63,7 @@ module Ruboty
                                               name: 'permit',    description: 'manage permitted source ip list')
       on /ec2 *freeze +(?<ins_name>\S+)\z/,   name: 'freeze',    description: 'freeze archive'
       on /ec2 *thaw +(?<ins_name>\S+)\z/,     name: 'thaw',      description: 'thaw frozen archive'
+      on /ec2 +privilege +list\z/,            name: 'privilege', description: 'show privilege list'
 
       def create(message)
         Ruboty::Ec2::Actions::Create.new(message).call
@@ -137,6 +139,10 @@ module Ruboty
 
       def replicate(message)
         Ruboty::Ec2::Actions::Replicate.new(message).call
+      end
+
+      def privilege(message)
+        Ruboty::Ec2::Actions::Privilege.new(message).call
       end
     end
   end
