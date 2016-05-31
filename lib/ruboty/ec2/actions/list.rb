@@ -66,7 +66,13 @@ module Ruboty
           header_str << sprintf("[-] %s|%s|%s|%s|%s|%s|%s",
                                 "- InsName ------", "- PrivateIp --", "- PublicIp -----",
                                 " Access ", "- UsingAMI ---", "- Type ----", "- Owner ---")
+          warn_str  = ""
+          if filter_str.nil?
+            warn_str  = "`#{ENV['SLACK_USERNAME']} ec2 list instance は出来るだけ使わないでね（関係ない人に通知が飛んじゃうよ）`\n"
+            warn_str << "`instanceを付けずに実行するか、#{ENV['SLACK_USERNAME']} ec2 list filter {ワード}を使ってね`\n"
+          end
           reply_msg  = "```#{header_str}#{msg_list}```"
+          reply_msg  = "#{warn_str}#{reply_msg}" if !warn_str.empty?
           reply_msg  = "インスタンスが見つからないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
@@ -114,7 +120,13 @@ module Ruboty
           header_str << sprintf("[AMIStatus]%-15s|%-12s|%-12s|%s|%s",
                                 "- InsName -------", "- UsingAMI ---",  "- PrivateIp --",
                                 " F ", "- Owner ---")
-          reply_msg  = "```\n#{header_str}#{msg_list}```"
+          warn_str  = ""
+          if filter_str.nil?
+            warn_str  = "`#{ENV['SLACK_USERNAME']} ec2 archive は出来るだけ使わないでね（関係ない人に通知が飛んじゃうよ）`\n"
+            warn_str << "`archiveを付けずに実行するか、#{ENV['SLACK_USERNAME']} ec2 list filter {ワード}を使ってね`\n"
+          end
+          reply_msg  = "```#{header_str}#{msg_list}```"
+          reply_msg  = "#{warn_str}#{reply_msg}" if !warn_str.empty?
           reply_msg  = "アーカイブが見つからないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
