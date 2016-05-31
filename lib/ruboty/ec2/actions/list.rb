@@ -122,7 +122,7 @@ module Ruboty
                                 " F ", "- Owner ---")
           warn_str  = ""
           if filter_str.nil?
-            warn_str  = "`#{ENV['SLACK_USERNAME']} ec2 archive は出来るだけ使わないでね（関係ない人に通知が飛んじゃうよ）`\n"
+            warn_str  = "`#{ENV['SLACK_USERNAME']} ec2 list archive は出来るだけ使わないでね（関係ない人に通知が飛んじゃうよ）`\n"
             warn_str << "`archiveを付けずに実行するか、#{ENV['SLACK_USERNAME']} ec2 list filter {ワード}を使ってね`\n"
           end
           reply_msg  = "```#{header_str}#{msg_list}```"
