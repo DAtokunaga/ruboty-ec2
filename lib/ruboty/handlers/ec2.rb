@@ -21,6 +21,7 @@ require "ruboty/ec2/actions/permit"
 require "ruboty/ec2/actions/freeze"
 require "ruboty/ec2/actions/thaw"
 require "ruboty/ec2/actions/replicate"
+require "ruboty/ec2/actions/repliarch"
 require "ruboty/ec2/actions/privilege"
 
 module Ruboty
@@ -50,6 +51,8 @@ module Ruboty
                                               name: 'access',    description: 'manage access permit'
       on /ec2 *replicate +(?<from_multiins>\S+) +(?<to_multiins>\S+)\z/,
                                               name: 'replicate', description: 'create replica and set tag[ReplicaInfo]'
+      on /ec2 *repliarch +(?<from_multiarc>\S+) +(?<to_multiins>\S+)\z/,
+                                              name: 'repliarch', description: 'create replica from archive and set tag[ReplicaInfo]'
 
       # インスタンスメタ情報管理系
       on /ec2 *detail +(?<ins_name>\S+)\z/,   name: 'detail',    description: 'show instance/archive/AMI detail information'
@@ -139,6 +142,10 @@ module Ruboty
 
       def replicate(message)
         Ruboty::Ec2::Actions::Replicate.new(message).call
+      end
+
+      def repliarch(message)
+        Ruboty::Ec2::Actions::Repliarch.new(message).call
       end
 
       def privilege(message)
