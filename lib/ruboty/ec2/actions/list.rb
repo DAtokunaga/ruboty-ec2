@@ -83,6 +83,8 @@ module Ruboty
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
           arc_infos = ec2.get_arc_infos
 
+puts "arc count: #{arc_infos.size}"
+
           # サマリ表示情報取得・集計
           arc_summary = {'total_count' => 0}
           arc_filterd = {'total_count' => 0}
@@ -98,6 +100,8 @@ module Ruboty
             end
           end
 
+puts "arc count up for summary"
+
           # 応答メッセージ文字列生成
           msg_list  = ""
           arc_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |name, ami|
@@ -105,6 +109,7 @@ module Ruboty
             frozen = (!ami[:frozen].nil? and !ami[:frozen].empty?) ? "Y" : ""
             msg_list << sprintf("\n[%9s] %-15s | %-12s | %-12s | %1s | %s",
                          ami[:state], ami[:name], ami[:parent_id], ami[:ip_addr], frozen, ami[:owner])
+puts "generate msg_list: #{name}"
           end
           header_str  = "Summary -> total:#{arc_summary['total_count']}"
           header_str << ", available:#{arc_summary['available']}" if !arc_summary['available'].nil?
@@ -120,6 +125,7 @@ module Ruboty
           header_str << sprintf("[AMIStatus]%-15s|%-12s|%-12s|%s|%s",
                                 "- InsName -------", "- UsingAMI ---",  "- PrivateIp --",
                                 " F ", "- Owner ---")
+puts "generate header_str: #{header_str}"
           warn_str  = ""
           if filter_str.nil?
             warn_str  = "`#{ENV['SLACK_USERNAME']} ec2 list archive は出来るだけ使わないでね（関係ない人に通知が飛んじゃうよ）`\n"
@@ -128,6 +134,7 @@ module Ruboty
           reply_msg  = "```#{header_str}#{msg_list}```"
           reply_msg  = "#{warn_str}#{reply_msg}" if !warn_str.empty?
           reply_msg  = "アーカイブが見つからないよ" if msg_list.empty?
+puts "generate reply_msg: #{reply_msg}"
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
