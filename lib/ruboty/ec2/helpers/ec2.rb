@@ -72,8 +72,10 @@ module Ruboty
           if !ins_name.nil?
             params[:filters] << {:name => "tag:Name", :values => [ins_name]}
           end
+puts "describe_images start"
           resp      = @ec2.describe_images(params)
           ami_infos = {}
+puts "describe_images end"
 
           resp.images.each do |ami|
             next if ami.state == "deregistered"
@@ -91,7 +93,9 @@ module Ruboty
             ami_info[:state]        = ami.state
             name                    = ami_info[:name] ? ami_info[:name] : ami_info[:ami_name]
             ami_infos[name]         = ami_info
+puts "create arc_infos: #{name}"
           end
+puts "create arc_infos end"
           ami_infos
         end
 
