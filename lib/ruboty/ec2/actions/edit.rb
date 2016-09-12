@@ -17,7 +17,7 @@ module Ruboty
           ins_name = message[:ins_name]
           tag_name = message[:tag_name]
           tag_key  = tag_name.camelcase
-          new_data = message[:data].gsub("\n", "¥n")
+          new_data = message[:data].gsub("\n", "¥n").gsub('"', '')
 
           ## 事前チェック ##
 
