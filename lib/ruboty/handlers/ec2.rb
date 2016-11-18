@@ -2,6 +2,7 @@ require "ruboty/ec2/helpers/util"
 require "ruboty/ec2/helpers/brain"
 require "ruboty/ec2/helpers/ec2"
 require "ruboty/ec2/helpers/r53"
+require "ruboty/ec2/helpers/slack"
 require "ruboty/ec2/actions/create"
 require "ruboty/ec2/actions/stop"
 require "ruboty/ec2/actions/start"
@@ -23,6 +24,7 @@ require "ruboty/ec2/actions/thaw"
 require "ruboty/ec2/actions/replicate"
 require "ruboty/ec2/actions/repliarch"
 require "ruboty/ec2/actions/privilege"
+require "ruboty/ec2/actions/owner"
 
 module Ruboty
   module Handlers
@@ -67,6 +69,8 @@ module Ruboty
       on /ec2 *freeze +(?<ins_name>\S+)\z/,   name: 'freeze',    description: 'freeze archive'
       on /ec2 *thaw +(?<ins_name>\S+)\z/,     name: 'thaw',      description: 'thaw frozen archive'
       on /ec2 +privilege +list\z/,            name: 'privilege', description: 'show privilege list'
+      on(/ec2 +owner +(?<cmd>transfer|absence) *(?<ins_name>\S+)* *(?<to_user>\S+)* *\z/,
+                                              name: 'owner',     description: 'manage ownership of instance')
 
       def create(message)
         Ruboty::Ec2::Actions::Create.new(message).call
@@ -150,6 +154,10 @@ module Ruboty
 
       def privilege(message)
         Ruboty::Ec2::Actions::Privilege.new(message).call
+      end
+
+      def owner(message)
+        Ruboty::Ec2::Actions::Owner.new(message).call
       end
     end
   end
