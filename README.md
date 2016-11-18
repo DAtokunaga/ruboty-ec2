@@ -5,7 +5,7 @@ ec2 controller for ruboty
 
 ```ruby
 # Gemfile
-gem 'ruboty-ec2', '0.x.x', :git => 'git://github.com/miyaz/ruboty-ec2.git'
+gem 'ruboty-ec2', '0.x.x', :git => 'git://github.com/DreamArtsOkinawa/ruboty-ec2.git'
 ```
 
 ## ENV
@@ -22,5 +22,6 @@ RUBOTY_EC2_DOMAIN_{CN}          - Route53 Domain Name for each Channel
 RUBOTY_EC2_REGION_{CN}          - AWS region for each Channel. (default: ap-northeast-1)
 RUBOTY_EC2_EXCHANGE_RATE        - Exchange Rate (USD/JPY)
 RUBOTY_EC2_SUPER_ADMIN          - SuperAdmin UserName (comma separated variable)
+SLACK_API_TOKEN                 - Slack API Token to get User List
 ```
 
