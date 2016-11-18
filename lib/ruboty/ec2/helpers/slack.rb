@@ -22,7 +22,7 @@ module Ruboty
     
           uri.query_values ||= {}
           uri.query_values   = uri.query_values.merge(query)
-    
+ 
           res_json = Net::HTTP.get(URI.parse(uri))
           res_hash = JSON.parse(res_json, {:symbolize_names => true})
           users_hash = {}
@@ -32,7 +32,7 @@ module Ruboty
             email = mem_hash[:profile][:email]
             name  = mem_hash[:name]
             flag  = mem_hash[:deleted]
-            users_hash[name] = {:disabled => flag}
+            users_hash[email] = {:email => email, :name => name, :disabled => flag}
           end
           raise "api response : #{res_hash}" if res_hash.nil? or !res_hash[:ok]
           users_hash
