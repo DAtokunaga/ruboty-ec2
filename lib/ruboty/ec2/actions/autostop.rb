@@ -99,11 +99,15 @@ module Ruboty
           end
 
           msg_list  = ""
-          except_stop_ins_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2}.each do |name, ins|
-            msg_list << sprintf("\n%-15s | %s", name, ins[:except_stop])
+          except_stop_ins_infos.sort {|(k1, v1), (k2, v2)| v1[:except_stop] <=> v2[:except_stop]}.each do |name, ins|
+            setdate_match = ins[:except_stop].match(%r{[\d/]{10} [\d:]{8}})
+            elapsed_days  = ( setdate_match.nil? ? "???" : util.get_time_diff(setdate_match[0]) / 24 )
+            msg_list << sprintf("\n%-15s | %6s | %s", name, elapsed_days, ins[:except_stop])
           end
-          reply_msg = "自動停止対象外のインスタンス一覧だよ\n```#{msg_list}```"
-          reply_msg = "自動停止対象外インスタンスはないよ" if msg_list.empty?
+          reply_msg =  "自動停止対象外のインスタンス一覧だよ. 設定から経過した日数順に並べてみたよ\n```"
+          reply_msg << "- InsName ------|- Days -|- Note -------------------------"
+          reply_msg << "#{msg_list}```"
+          reply_msg =  "自動停止対象外インスタンスはないよ" if msg_list.empty?
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
