@@ -47,8 +47,8 @@ module Ruboty
           end
 
           ## 現在利用中のインスタンス／アーカイブ情報を取得
-          ins_infos = ec2.get_ins_infos(ins_name)
-          arc_infos = ec2.get_arc_infos(ins_name)
+          ins_infos = ec2.get_ins_infos({'Name' => ins_name})
+          arc_infos = ec2.get_arc_infos({'Name' => ins_name})
 
           ## インスタンス存在チェック
           if ins_infos[ins_name].nil? and arc_infos[ins_name].nil?

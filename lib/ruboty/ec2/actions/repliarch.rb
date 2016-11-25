@@ -87,7 +87,7 @@ module Ruboty
                         Ruboty::Ec2::Const::InsTypePV)
 
             # インスタンス作成
-            arc_info = ec2.get_arc_infos(fr_arc_name)[fr_arc_name]
+            arc_info = ec2.get_arc_infos({'Name' => fr_arc_name})[fr_arc_name]
             params   = {:image_id           => arc_info[:image_id],
                         :private_ip_address => private_ip,
                         :instance_type      => ins_type}

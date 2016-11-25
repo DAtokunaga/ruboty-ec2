@@ -103,7 +103,7 @@ module Ruboty
           ## 事前チェック ##
 
           ## 現在利用中のインスタンス情報を取得
-          ins_infos = ec2.get_ins_infos(ins_name)
+          ins_infos = ec2.get_ins_infos({'Name' => ins_name})
           # 存在チェック
           raise "インスタンス[#{ins_name}]が見つからないよ" if ins_infos.empty?
           # 既存設定有無チェック
@@ -137,7 +137,7 @@ module Ruboty
           ## 事前チェック ##
 
           ## 現在利用中のインスタンス情報を取得
-          ins_infos = ec2.get_ins_infos(ins_name)
+          ins_infos = ec2.get_ins_infos({'Name' => ins_name})
           # 存在チェック
           raise "インスタンス[#{ins_name}]が見つからないよ" if ins_infos.empty?
           # 既存設定有無チェック

@@ -132,7 +132,7 @@ module Ruboty
             ins_type = ins_infos[fr_ins_name][:instance_type]
 
             # インスタンス作成
-            arc_info = ec2.get_arc_infos(fr_ins_name)[fr_ins_name]
+            arc_info = ec2.get_arc_infos({'Name' => fr_ins_name})[fr_ins_name]
             params   = {:image_id           => arc_info[:image_id],
                         :private_ip_address => private_ip,
                         :instance_type      => ins_type}

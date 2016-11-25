@@ -21,7 +21,7 @@ module Ruboty
           ## 事前チェック ##
 
           ## 現在利用中のアーカイブ情報を取得
-          arc_infos = ec2.get_arc_infos(ins_name)
+          arc_infos = ec2.get_arc_infos({'Name' => ins_name})
           # 存在チェック
           raise "アーカイブ[#{ins_name}]が見つからないよ" if arc_infos.empty?
           # 既存設定有無チェック

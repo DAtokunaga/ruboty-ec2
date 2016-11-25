@@ -26,13 +26,15 @@ module Ruboty
           resp.subnets.first.cidr_block
         end
 
-        def get_ins_infos(ins_name = nil)
+        def get_ins_infos(tag_filters = {})
           puts "Ruboty::Ec2::Helpers::Ec2.get_ins_infos called"
-          params     = {:filters => [{:name => "subnet-id", :values => [@subnet_id]}]}
-          params[:filters] << {:name => "tag:Name", :values => [ins_name]} if !ins_name.nil?
+          params = {:filters => [{:name => "subnet-id", :values => [@subnet_id]}]}
+          tag_filters.each do |tag_key, tag_value|
+            params[:filters] << {:name => "tag:#{tag_key}", :values => [tag_value]}
+          end
 
-          resp       = @ec2.describe_instances(params)
-          ins_infos  = {}
+          resp      = @ec2.describe_instances(params)
+          ins_infos = {}
 
           resp.reservations.each do |reservation|
             reservation.instances.each do |ins|
@@ -66,12 +68,13 @@ module Ruboty
           ins_infos
         end
 
-        def get_arc_infos(ins_name = nil)
+        def get_arc_infos(tag_filters = {})
           puts "Ruboty::Ec2::Helpers::Ec2.get_arc_infos called"
-          params    = {:filters => [{:name => "is-public", values: ["false"]}]}
-          if !ins_name.nil?
-            params[:filters] << {:name => "tag:Name", :values => [ins_name]}
+          params = {:filters => [{:name => "is-public", values: ["false"]}]}
+          tag_filters.each do |tag_key, tag_value|
+            params[:filters] << {:name => "tag:#{tag_key}", :values => [tag_value]}
           end
+
 puts "describe_images start"
           resp      = @ec2.describe_images(params)
           ami_infos = {}
@@ -202,7 +205,7 @@ puts "create arc_infos end"
           puts "  associate public ip check start"
           while public_ip.nil? do
             sleep(3)
-            ins_info  = get_ins_infos(ins_name)
+            ins_info  = get_ins_infos({'Name' => ins_name})
             public_ip = ins_info[ins_name][:public_ip] if !ins_info[ins_name].nil?
             elpsd_sec = (Time.now - started_at).to_i
             puts "    ... #{elpsd_sec} seconds elapsed"

@@ -21,10 +21,10 @@ module Ruboty
           ## 事前チェック ##
 
           ## 現在利用中のインスタンス情報を取得
-          arc_infos = ec2.get_arc_infos(ins_name)
+          arc_infos = ec2.get_arc_infos({'Name' => ins_name})
           # アーカイブ存在チェック
           if arc_infos.empty?
-            ins_infos = ec2.get_ins_infos(ins_name)
+            ins_infos = ec2.get_ins_infos({'Name' => ins_name})
             # インスタンス存在チェック
             raise "インスタンス[#{ins_name}]が見つからないよ" if ins_infos.empty?
             # ステータス[停止]チェック
