@@ -29,8 +29,6 @@ module Ruboty
           raise "インスタンス[#{ins_name}]は今処理中で止められないっす..." if ins_info[:state] != "running"
           raise "インスタンス[#{ins_name}]は停止しちゃだめだよ" if !/10.[\d]+.0.4$/.match(ins_info[:private_ip]).nil?
 
-return
-
           ## メイン処理 ##
 
           # 停止処理実施
