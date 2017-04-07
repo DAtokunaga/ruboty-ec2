@@ -11,6 +11,7 @@ module Ruboty
           ami_list      if resource == "ami"
           filtered_list if resource == "filter"
           summary       if resource == "summary"
+          permit        if resource == "permit"
         end
 
         private
@@ -181,6 +182,39 @@ module Ruboty
           reply_msg  = "#{ins_str}#{arc_str}定期的に見直して、使わないものは削除してね"
           message.reply(reply_msg)
         rescue => e
+          message.reply(e.message)
+        end
+
+        def permit
+          # AWSアクセス、その他ユーティリティのインスタンス化
+          ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
+          
+          ## メイン処理 ##
+ 
+          ## インスタンス／SG情報取得
+          sg_infos  = ec2.get_sg_infos
+          ins_infos = ec2.get_ins_infos
+ 
+          msg_list  = ""
+          sg_infos.sort {|(k1, v1), (k2, v2)| k1 <=> k2 }.each do |sg_name, sg_info|
+            next if sg_name == "default"
+            next if !sg_name.index("skt-").nil?
+            msg_list << "\n[#{sg_name}]"
+            msg_list << "\n  Permitted IPs  -> #{sg_info[:ip_perms].join(',')}"
+            inuse_list = []
+            ins_infos.each do |name, ins|
+              inuse_list << name if ins[:groups].keys.include?(sg_name)
+            end
+            if inuse_list.empty? 
+              msg_list << "\n  Instance InUse -> なし"
+            else
+              msg_list << "\n  Instance InUse -> #{inuse_list.join(',')}"
+            end
+          end 
+          header_str = "アクセス許可ポリシー(対象ポート:443/8443)の情報だよ"
+          reply_msg  = "#{header_str} ```#{msg_list}```"
+          message.reply(reply_msg)
+        rescue => e  
           message.reply(e.message)
         end
 
