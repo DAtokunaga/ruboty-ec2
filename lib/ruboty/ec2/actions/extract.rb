@@ -64,7 +64,7 @@ module Ruboty
           # DNS設定
           r53 = Ruboty::Ec2::Helpers::Route53.new(message)
           r53.update_record_sets({ins_name => public_ip})
-          reply_msg =  "DNS設定が完了したよ[#{ins_name}.#{util.get_domain} => #{public_ip}]\n"        
+          reply_msg =  "DNS設定が完了したよ[#{util.get_protocol}#{ins_name}.#{util.get_domain} => #{public_ip}]\n"        
           reply_msg << "`archive前にアクセス許可設定をしていた場合は再設定が必要になるよ`"
           message.reply(reply_msg)
 

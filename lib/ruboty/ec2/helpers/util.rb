@@ -124,6 +124,10 @@ module Ruboty
           domain
         end
 
+        def get_protocol
+          'http://'
+        end
+
         def get_default_ami
           from_ch   = get_channel
           ami_id    = ENV["RUBOTY_EC2_DEFAULT_AMI_#{from_ch}"]

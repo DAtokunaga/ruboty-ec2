@@ -47,7 +47,7 @@ module Ruboty
           # DNS設定
           r53 = Ruboty::Ec2::Helpers::Route53.new(message)
           r53.update_record_sets({ins_name => public_ip})
-          message.reply("DNS設定が完了したよ[#{ins_name}.#{util.get_domain} => #{public_ip}]")
+          message.reply("DNS設定が完了したよ[#{util.get_protocol}#{ins_name}.#{util.get_domain} => #{public_ip}]")
         rescue => e
           message.reply(e.message)
         end
