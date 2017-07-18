@@ -158,6 +158,35 @@ module Ruboty
           @msg.original[:from] ? @msg.original[:from].split("/").last : "shell"
         end
 
+        # 2017-07-18 知話輪対応 start
+        def get_caller_id
+          get_cww_id(get_caller)
+        end
+
+        def get_caller_name
+          get_cww_name(get_caller)
+        end
+
+        def get_caller_mention_name
+          get_cww_mention_name(get_caller)
+        end
+
+        def get_cww_id(uname)
+          id = uname[/\((.*?)\)/, 1]
+          id.nil? ? uname : id
+        end
+
+        def get_cww_name(uname)
+          name = uname[/^(.*?)\(/, 1]
+          name.nil? ? uname : name
+        end
+
+        def get_cww_mention_name(uname)
+          name =  get_cww_name(uname)
+          name.gsub(" ", "").gsub(":", "：") #半角スペースを削除+半角コロンを全角に置換
+        end
+        # 2017-07-18 知話輪対応 end
+
         def usable_iprange(subnet_cidr)
           iprange_array = []
           iprange_range = IPAddr.new(subnet_cidr).to_range

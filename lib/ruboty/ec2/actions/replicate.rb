@@ -59,7 +59,9 @@ module Ruboty
           to_ins_array.each do |to_ins_name|
             if !ins_infos[to_ins_name].nil?
               owner = ins_infos[to_ins_name][:owner]
-              if caller != owner
+              # if caller != owner
+              # 2017-07-18 知話輪対応
+              if util.get_cww_id(caller) != util.get_cww_id(owner)
                 raise "インスタンス[#{to_ins_name}]を削除できるのはオーナー[#{owner}]だけだよ"
               end
               # 稼働時間を記録

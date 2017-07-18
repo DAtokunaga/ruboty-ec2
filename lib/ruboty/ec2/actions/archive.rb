@@ -67,7 +67,9 @@ module Ruboty
               next
             end
             if stop_days >= period_notice and stop_days < (period_notice + 1)
-              reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]は "
+              # 2017-07-18 知話輪対応
+              owner_mention_name = util.get_cww_mention_name(ins[:owner])
+              reply_msg << "@#{owner_mention_name}: インスタンス[#{name}]は "
               reply_msg << "あと#{remain_days}日後にアーカイブしちゃうよ！\n"
             end
           end
@@ -77,7 +79,9 @@ module Ruboty
           end
           archive_list.each do |name, ins|
             ins_archive(name, ins)
-            reply_msg << "@#{ins[:owner]}: インスタンス[#{name}]をアーカイブしたよ\n"
+            # 2017-07-18 知話輪対応
+            owner_mention_name = util.get_cww_mention_name(ins[:owner])
+            reply_msg << "@#{owner_mention_name}: インスタンス[#{name}]をアーカイブしたよ\n"
           end
           message.reply(reply_msg.chomp) if !reply_msg.empty?
         rescue => e

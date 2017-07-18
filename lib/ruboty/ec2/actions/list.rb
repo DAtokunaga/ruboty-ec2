@@ -126,11 +126,13 @@ module Ruboty
         def my_ins_list
           util  = Ruboty::Ec2::Helpers::Util.new(message)
           owner = util.get_caller
+          id    = util.get_caller_id
+          name  = util.get_caller_name
 
           message.reply("owned by '#{owner}'\n[インスタンス]\n")
-          instance_list({'Owner' => owner})
+          instance_list({'Owner' => "*#{id}*"})
           message.reply("[アーカイブ]\n")
-          archive_list({'Owner' => owner})
+          archive_list({'Owner' => "*#{id}*"})
         rescue => e
           message.reply(e.message)
         end

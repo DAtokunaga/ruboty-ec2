@@ -30,7 +30,9 @@ module Ruboty
             # ステータス[停止]チェック
             ins_info = ins_infos[ins_name]
             raise "インスタンス[#{ins_name}]を先に停止プリーズ" if ins_info[:state] != "stopped"
-            if caller != ins_info[:owner]
+            # if caller != ins_info[:owner]
+            # 2017-07-18 知話輪対応
+            if util.get_cww_id(caller) != util.get_cww_id(ins_info[:owner])
               raise "インスタンス[#{ins_name}]を削除できるのはオーナー[#{ins_info[:owner]}]だけだよ"
             end
 
@@ -43,7 +45,9 @@ module Ruboty
             if !arc_info[:frozen].nil? and !arc_info[:frozen].empty?
               raise "アーカイブ[#{ins_name}]は凍結されてるよ. 先に解除(thaw)してね"
             end
-            if caller != arc_info[:owner]
+            # if caller != arc_info[:owner]
+            # 2017-07-18 知話輪対応
+            if util.get_cww_id(caller) != util.get_cww_id(arc_info[:owner])
               raise "アーカイブ[#{ins_name}]を削除できるのはオーナー[#{arc_info[:owner]}]だけだよ"
             end
             # アーカイブ削除
