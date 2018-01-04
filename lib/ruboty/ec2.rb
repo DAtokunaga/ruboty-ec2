@@ -37,6 +37,8 @@ module Ruboty
       PeriodToArchive = 20
       # Period to archive notification(days)
       PeriodToArchiveNotice = 15
+      # Route53 API(change_resource_record_sets) wait time(seconds)
+      WaitTimeForR53API = 1
     end
   end
 end

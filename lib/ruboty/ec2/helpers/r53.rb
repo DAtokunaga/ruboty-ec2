@@ -48,8 +48,8 @@ module Ruboty
 
         def update_record_sets(upd_infos)
           puts "Ruboty::Ec2::Helpers::Route53.update_record_sets called"
-          record_sets = []
           upd_infos.each do |ins_name, public_ip|
+            record_sets = []
             record_sets << {
               :action     => "UPSERT",
               :resource_record_set => {
@@ -70,58 +70,77 @@ module Ruboty
                 }]
               }
             }
+            params = {
+              :hosted_zone_id => @zone_id,
+              :change_batch   => {
+                :comment      => "for sakutto instance",
+                :changes      => record_sets
+              } 
+            }
+            @r53.change_resource_record_sets(params)
+            # wait for AWS Route53 API
+            sleep(Ruboty::Ec2::Const::WaitTimeForR53API)
           end
-          params = {
-            :hosted_zone_id => @zone_id,
-            :change_batch   => {
-              :comment      => "for sakutto instance",
-              :changes      => record_sets
-            } 
-          }
-          @r53.change_resource_record_sets(params)
         end
 
         def delete_record_sets(del_infos)
           puts "Ruboty::Ec2::Helpers::Route53.delete_record_sets called"
           # check exist fqdn
-          params = {
+          list_params = {
             :hosted_zone_id => @zone_id
           }
-          record_sets = []
-          resp = @r53.list_resource_record_sets(params)
-          resp.resource_record_sets.each do |rset|
-            next if rset.type != "A"
-            ins_name = rset.name.gsub(/\..*/, '')
-            next if !del_infos.include?(ins_name)
-            next if del_infos[ins_name].nil?
-            record_sets << {
-              :action     => "DELETE",
-              :resource_record_set => {
-                :name     => "#{ins_name}.#{@domain}",
-                :type     => "A",
-                :ttl      => 10,
-                :resource_records => [{:value => del_infos[ins_name]}]
+          flag = true
+          # loop for getting all records by list_resorce_record_sets
+          while flag do
+            resp = @r53.list_resource_record_sets(list_params)
+            resp.resource_record_sets.each do |rset|
+              next if rset.type != "A"
+              ins_name = rset.name.gsub(/\..*/, '')
+#puts "ins_name = #{ins_name}"
+              next if !del_infos.include?(ins_name)
+              next if del_infos[ins_name].nil?
+#puts "target instance [Name = #{ins_name}, Public = #{del_infos[ins_name]}]"
+              record_sets = []
+              record_sets << {
+                :action     => "DELETE",
+                :resource_record_set => {
+                  :name     => "#{ins_name}.#{@domain}",
+                  :type     => "A",
+                  :ttl      => 10,
+                  :resource_records => [{:value => del_infos[ins_name]}]
+                }
               }
-            }
-            record_sets << {
-              :action     => "DELETE",
-              :resource_record_set => {
-                :name     => "#{ins_name}.#{@domain}",
-                :type     => "MX",
-                :ttl      => 10,
-                :resource_records => [{:value => "10 #{ins_name}.#{@domain}"}]
+              record_sets << {
+                :action     => "DELETE",
+                :resource_record_set => {
+                  :name     => "#{ins_name}.#{@domain}",
+                  :type     => "MX",
+                  :ttl      => 10,
+                  :resource_records => [{:value => "10 #{ins_name}.#{@domain}"}]
+                }
               }
-            }
+              return if record_sets.empty?
+              # delete record set
+              params = {
+                :hosted_zone_id => @zone_id,
+                :change_batch   => {
+                  :changes      => record_sets
+                }
+              }
+              @r53.change_resource_record_sets(params)
+              # wait for AWS Route53 API
+              sleep(Ruboty::Ec2::Const::WaitTimeForR53API)
+            end
+#puts "resp.next_record_name = #{resp.next_record_name}"
+#puts "resp.next_record_type = #{resp.next_record_type}"
+            # check next loop?
+            if resp.next_record_name.nil?
+              flag = false
+            else
+              list_params[:start_record_name] = resp.next_record_name
+              list_params[:start_record_type] = resp.next_record_type
+            end
           end
-          return if record_sets.empty?
-          # delete record set
-          params = {
-            :hosted_zone_id => @zone_id,
-            :change_batch   => {
-              :changes      => record_sets
-            }
-          }
-          @r53.change_resource_record_sets(params)
         end
 
       end
