@@ -53,19 +53,20 @@ module Ruboty
           params["Param"]      = arc_info[:param] if !arc_info[:param].nil?
           params["AutoStart"]  = arc_info[:auto_start] if !arc_info[:auto_start].nil?
           params["ExceptStop"] = arc_info[:except_stop] if !arc_info[:except_stop].nil?
+          params["Version"]    = arc_info[:version] if !arc_info[:version].nil?
           ec2.update_tags([ins_id], params)
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
           message.reply("アーカイブ[#{ins_name}]からインスタンスを作ったよ. DNS設定完了までもう少し待っててね")
 
           # パブリックIPを取得
-          public_ip = ec2.wait_for_associate_public_ip(ins_name)
+          ins_pip_hash = ec2.wait_for_associate_public_ip(ins_name)
 
           # DNS設定
           r53 = Ruboty::Ec2::Helpers::Route53.new(message)
-          r53.update_record_sets({ins_name => public_ip})
-          reply_msg =  "DNS設定が完了したよ[#{util.get_protocol}#{ins_name}.#{util.get_domain} => #{public_ip}]\n"        
-          reply_msg << "`archive前にアクセス許可設定をしていた場合は再設定が必要になるよ`"
+          r53.update_record_sets(ins_pip_hash)
+          reply_msg =  "DNS設定が完了したよ[#{util.get_protocol(ins_pip_hash[ins_name][:version])}#{ins_name}.#{util.get_domain} => #{ins_pip_hash[ins_name][:public_ip]}]"
+          reply_msg << "[管理 #{util.get_protocol(ins_pip_hash[ins_name][:version])}#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{util.get_domain}]" if !ins_pip_hash[ins_name][:version].empty?
           message.reply(reply_msg)
 
           # アーカイブ削除

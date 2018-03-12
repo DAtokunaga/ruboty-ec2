@@ -21,11 +21,12 @@ module Ruboty
           ## 事前チェック ##
 
           # インスタンス名チェック
-          if !new_ins_name.match(/^[a-z0-9\-]+$/) or new_ins_name.length > 15
+          if !new_ins_name.match(/^[a-z0-9\-]+$/) or new_ins_name.length > 15 or new_ins_name.match(/#{Ruboty::Ec2::Const::AdminSuffix4RegExp}$/)
             warn_msg =  "インスタンス名は↓このルールで指定してね\n"
             warn_msg << "```\n"
             warn_msg << "  許容文字 -> 半角英数字(小文字)、及び-(半角ハイフン)\n"
             warn_msg << "  文字列長 -> 15文字以内"
+            warn_msg << "  最後が'#{Ruboty::Ec2::Const::AdminSuffix}'で終わっていないこと"
             warn_msg << "```"
             raise warn_msg
           end

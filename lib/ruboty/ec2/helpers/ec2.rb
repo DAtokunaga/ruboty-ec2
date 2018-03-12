@@ -180,7 +180,7 @@ puts "create arc_infos end"
 
           params = {:resources => ins_ids, :tags => []}
           tag_hash.each do |key,val|
-            params[:tags] << {:key => key, :value => val}
+            params[:tags] << {:key => key, :value => val} 
           end
           @ec2.create_tags(params)
         rescue
@@ -201,19 +201,23 @@ puts "create arc_infos end"
         def wait_for_associate_public_ip(ins_name)
           puts "Ruboty::Ec2::Helpers::Ec2.wait_for_associate_public_ip called"
           started_at = Time.now
-          public_ip  = nil
+          ins_pip_hash = {}
           puts "  associate public ip check start"
-          while public_ip.nil? do
+          while ins_pip_hash[ins_name].nil? do
             sleep(3)
             ins_info  = get_ins_infos({'Name' => ins_name})
-            public_ip = ins_info[ins_name][:public_ip] if !ins_info[ins_name].nil?
-            elpsd_sec = (Time.now - started_at).to_i
-            puts "    ... #{elpsd_sec} seconds elapsed"
+            if !ins_info.empty?
+              ins     = ins_info[ins_name]
+              version = ins[:version].nil? ? '' : ins[:version]
+              ins_pip_hash[ins_name] = { :public_ip => ins[:public_ip], :version => version } if !ins[:public_ip].nil?
+              elpsd_sec = (Time.now - started_at).to_i
+              puts "    ... #{elpsd_sec} seconds elapsed"
+            end
             break if ins_info.empty? or (Time.now - started_at).to_i > 90
           end
-          raise "インスタンス[#{ins_name}]が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ" if public_ip.nil?
-          puts "  associate public ip OK [#{public_ip}]"
-          public_ip
+          raise "インスタンス[#{ins_name}]が正常に起動しないよー。。(´Д⊂ｸﾞｽｸﾞｽﾝ" if ins_pip_hash[ins_name].nil?
+          puts "  associate public ip OK [#{ins_pip_hash[ins_name][:public_ip]}]"
+          ins_pip_hash
         end
 
         def wait_for_associate_multi_public_ip(ins_names)
@@ -226,7 +230,8 @@ puts "create arc_infos end"
             ins_infos = get_ins_infos
             ins_infos.each do |name, ins|
               next if !ins_names.include?(name)
-              ins_pip_hash[name] = ins[:public_ip] if !ins[:public_ip].nil?
+              version = ins[:version].nil? ? '' : ins[:version]
+              ins_pip_hash[name] = { :public_ip => ins[:public_ip], :version => version } if !ins[:public_ip].nil?
             end
             break if (Time.now - started_at).to_i > 90
           end

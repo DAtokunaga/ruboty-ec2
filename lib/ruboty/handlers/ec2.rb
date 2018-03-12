@@ -62,8 +62,8 @@ module Ruboty
                                               name: 'list',      description: 'show instance/archive/AMI list/permissions')
       on(/ec2 *usage *(?<yyyymm>last|20\d{4}+)*\z/,
                                               name: 'usage',     description: 'show instance usage of specified month')
-      on(/ec2 *edit +(?<tag_name>spec|desc|param) +(?<ins_name>\S+) +(?<data>.+)\z/m,
-                                              name: 'edit',      description: 'edit data of spec, desc and param')
+      on(/ec2 *edit +(?<tag_name>spec|desc|param|version) +(?<ins_name>\S+) +(?<data>.+)\z/m,
+                                              name: 'edit',      description: 'edit data of spec, desc, param and version')
       on(/ec2 *permit +(?<cmd>list|add|del) *(?<sg_name>\S+)* *(?<ip_csv>\S+)* *\z/,
                                               name: 'permit',    description: 'manage permitted source ip list')
       on /ec2 *freeze +(?<ins_name>\S+)\z/,   name: 'freeze',    description: 'freeze archive'

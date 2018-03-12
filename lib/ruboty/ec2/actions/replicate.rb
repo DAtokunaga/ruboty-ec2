@@ -26,11 +26,12 @@ module Ruboty
           to_ins_array = to_multiins.split(',')
           raise "コピー元とコピー先のインスタンス数が合わないよ" if fr_ins_array.size != to_ins_array.size
           to_ins_array.each do |ins_name|
-            if !ins_name.match(/^[a-z0-9\-]+$/) or ins_name.length > 15
+            if !ins_name.match(/^[a-z0-9\-]+$/) or ins_name.length > 15 or ins_name.match(/#{Ruboty::Ec2::Const::AdminSuffix4RegExp}$/)
               warn_msg =  "インスタンス名は↓このルールで指定してね\n"
               warn_msg << "```\n"
               warn_msg << "  許容文字 -> 半角英数字(小文字)、及び-(半角ハイフン)\n"
               warn_msg << "  文字列長 -> 15文字以内"
+              warn_msg << "  最後が'#{Ruboty::Ec2::Const::AdminSuffix}'で終わっていないこと"
               warn_msg << "```"
               raise warn_msg
             end
@@ -103,6 +104,7 @@ module Ruboty
             params["Param"]      = tmp_ins_info[:param] if !tmp_ins_info[:param].nil?
             #params["AutoStart"]  = tmp_ins_info[:auto_start] if !tmp_ins_info[:auto_start].nil?
             #params["ExceptStop"] = tmp_ins_info[:except_stop] if !tmp_ins_info[:except_stop].nil?
+            params["Version"]    = tmp_ins_info[:version] if !tmp_ins_info[:version].nil?
             ec2.update_tags([ami_id], params)
           end
 
@@ -145,6 +147,7 @@ module Ruboty
                        "ParentId"     => arc_info[:parent_id]}
             params["Spec"]  = arc_info[:spec]  if !arc_info[:spec].nil?
             params["Desc"]  = arc_info[:desc]  if !arc_info[:desc].nil?
+            params["Version"]    = arc_info[:version] if !arc_info[:version].nil?
             # インスタンスのTag[Param]にorchestrationをセット
             params["Param"] = "orchestration"
             # インスタンスにTag[ReplicaInfo]を追加

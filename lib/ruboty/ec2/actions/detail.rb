@@ -49,7 +49,7 @@ module Ruboty
           domain     = Ruboty::Ec2::Helpers::Util.new(message).get_domain
           ins_name   = ins_info[:name]
           basic_keys = ["name", "state", "owner", "instance_type", "parent_id", "private_ip", "public_ip"]
-          added_keys = ["spec", "desc", "param"]
+          added_keys = ["spec", "desc", "param", "version"]
           reply_msg  = "インスタンス[#{ins_name}]の情報だよ\n"
           reply_msg << "■基本情報\n```"
           basic_keys.each do |key|
@@ -69,6 +69,7 @@ module Ruboty
             tag_data.gsub!("¥n", "\n")
             tag_data.gsub!("&&NAME&&", ins_name)
             tag_data.gsub!("&&FQDN&&", "#{ins_name}.#{domain}")
+            tag_data.gsub!("&&FQDN-ADMIN&&", "#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{domain}")
             reply_msg << "\n[#{key.camelcase}]"
             reply_msg << "\n#{tag_data}"
           end
@@ -81,7 +82,7 @@ module Ruboty
           domain     = Ruboty::Ec2::Helpers::Util.new(message).get_domain
           ins_name   = arc_info[:name]
           basic_keys = ["name", "state", "owner", "parent_id", "ip_addr", "ami_name"]
-          added_keys = ["spec", "desc", "param"]
+          added_keys = ["spec", "desc", "param", "version"]
           reply_msg  = "アーカイブ[#{ins_name}]の情報だよ\n"
           reply_msg << "■基本情報\n```"
           basic_keys.each do |key|
@@ -97,6 +98,7 @@ module Ruboty
             tag_data.gsub!("¥n", "\n")
             tag_data.gsub!("&&NAME&&", ins_name)
             tag_data.gsub!("&&FQDN&&", "#{ins_name}.#{domain}")
+            tag_data.gsub!("&&FQDN-ADMIN&&", "#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{domain}")
             reply_msg << "\n[#{key.camelcase}]"
             reply_msg << "\n#{tag_data}"
           end
@@ -108,7 +110,7 @@ module Ruboty
         def detail_ami(ami_info)
           ami_id     = ami_info[:image_id]
           basic_keys = ["image_id", "name", "state"]
-          added_keys = ["spec", "desc", "param"]
+          added_keys = ["spec", "desc", "param", "version"]
           reply_msg  = "AMI[#{ami_id}]の情報だよ\n"
           reply_msg << "■基本情報\n```"
           basic_keys.each do |key|

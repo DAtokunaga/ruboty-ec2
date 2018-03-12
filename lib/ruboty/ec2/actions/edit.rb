@@ -44,6 +44,11 @@ module Ruboty
             ins_info    = ins_infos[ins_name]
             resource_id = ins_info[:instance_id]
             old_data    = ins_info[tag_name.to_sym]
+            # tagが"version"の場合、インスタンス起動中はエラーとする
+            if tag_name == "version"
+              raise "インスタンス起動中は、versionは編集できないよ" if ins_info[:state] == "running"
+              raise "インスタンス停止処理中は、versionは編集できないよ" if ins_info[:state] != "stopped"
+            end
           end
 
           ## メイン処理 ##

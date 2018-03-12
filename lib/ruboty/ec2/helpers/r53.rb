@@ -48,28 +48,63 @@ module Ruboty
 
         def update_record_sets(upd_infos)
           puts "Ruboty::Ec2::Helpers::Route53.update_record_sets called"
-          upd_infos.each do |ins_name, public_ip|
+          upd_infos.each do |ins_name, value|
+            public_ip = value[:public_ip]
             record_sets = []
-            record_sets << {
-              :action     => "UPSERT",
-              :resource_record_set => {
-                :name     => "#{ins_name}.#{@domain}",
-                :type     => "A",
-                :ttl      => 10,
-                :resource_records => [{:value  => public_ip}]
+
+            if value[:version].nil? or value[:version].empty?
+              record_sets << {
+                :action     => "UPSERT",
+                :resource_record_set => {
+                  :name     => "#{ins_name}.#{@domain}",
+                  :type     => "A",
+                  :ttl      => 10,
+                  :resource_records => [{:value  => public_ip}]
+                }
               }
-            }
-            record_sets << {
-              :action     => "UPSERT",
-              :resource_record_set => {
-                :name     => "#{ins_name}.#{@domain}",
-                :type     => "MX",
-                :ttl      => 10,
-                :resource_records => [{
-                  :value  => "10 #{ins_name}.#{@domain}."
-                }]
+              record_sets << {
+                :action     => "UPSERT",
+                :resource_record_set => {
+                  :name     => "#{ins_name}.#{@domain}",
+                  :type     => "MX",
+                  :ttl      => 10,
+                  :resource_records => [{
+                    :value  => "10 #{ins_name}.#{@domain}."
+                  }]
+                }
               }
-            }
+            else
+              record_sets << {
+                :action     => "UPSERT",
+                :resource_record_set => {
+                  :name     => "#{ins_name}.#{@domain}",
+                  :type     => "A",
+                  :ttl      => 10,
+                  :resource_records => [{:value  => public_ip}]
+                }
+              }
+              record_sets << {
+                :action     => "UPSERT",
+                :resource_record_set => {
+                  :name     => "#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{@domain}",
+                  :type     => "A",
+                  :ttl      => 10, 
+                  :resource_records => [{:value  => public_ip}]
+                }
+              }
+              record_sets << {
+                :action     => "UPSERT",
+                :resource_record_set => {
+                  :name     => "#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{@domain}",
+                  :type     => "MX",
+                  :ttl      => 10,
+                  :resource_records => [{
+                    :value  => "10 #{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{@domain}."
+                  }]
+                }
+              }
+            end
+
             params = {
               :hosted_zone_id => @zone_id,
               :change_batch   => {
@@ -99,26 +134,59 @@ module Ruboty
 #puts "ins_name = #{ins_name}"
               next if !del_infos.include?(ins_name)
               next if del_infos[ins_name].nil?
-#puts "target instance [Name = #{ins_name}, Public = #{del_infos[ins_name]}]"
+#puts "target instance [Name = #{ins_name}, Public = #{del_infos[ins_name][:public_ip]}]"
+
               record_sets = []
-              record_sets << {
-                :action     => "DELETE",
-                :resource_record_set => {
-                  :name     => "#{ins_name}.#{@domain}",
-                  :type     => "A",
-                  :ttl      => 10,
-                  :resource_records => [{:value => del_infos[ins_name]}]
+
+              if del_infos[ins_name][:version].nil? or del_infos[ins_name][:version].empty?
+                record_sets << {
+                  :action     => "DELETE",
+                  :resource_record_set => {
+                    :name     => "#{ins_name}.#{@domain}",
+                    :type     => "A",
+                    :ttl      => 10,
+                    :resource_records => [{:value => del_infos[ins_name][:public_ip]}]
+                  }
                 }
-              }
-              record_sets << {
-                :action     => "DELETE",
-                :resource_record_set => {
-                  :name     => "#{ins_name}.#{@domain}",
-                  :type     => "MX",
-                  :ttl      => 10,
-                  :resource_records => [{:value => "10 #{ins_name}.#{@domain}"}]
+                record_sets << {
+                  :action     => "DELETE",
+                  :resource_record_set => {
+                    :name     => "#{ins_name}.#{@domain}",
+                    :type     => "MX",
+                    :ttl      => 10,
+                    :resource_records => [{:value => "10 #{ins_name}.#{@domain}"}]
+                  }
                 }
-              }
+              else
+                record_sets << {
+                  :action     => "DELETE",
+                  :resource_record_set => {
+                    :name     => "#{ins_name}.#{@domain}",
+                    :type     => "A",
+                    :ttl      => 10,
+                    :resource_records => [{:value => del_infos[ins_name][:public_ip]}]
+                  }
+                }
+                record_sets << {
+                  :action     => "DELETE",
+                  :resource_record_set => {
+                    :name     => "#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{@domain}",
+                    :type     => "A",
+                    :ttl      => 10,
+                    :resource_records => [{:value => del_infos[ins_name][:public_ip]}]
+                  }
+                }
+                record_sets << {
+                  :action     => "DELETE",
+                  :resource_record_set => {
+                    :name     => "#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{@domain}",
+                    :type     => "MX",
+                    :ttl      => 10,
+                    :resource_records => [{:value => "10 #{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{@domain}"}]
+                  }
+                }
+              end
+
               return if record_sets.empty?
               # delete record set
               params = {

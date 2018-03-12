@@ -39,6 +39,9 @@ module Ruboty
       PeriodToArchiveNotice = 15
       # Route53 API(change_resource_record_sets) wait time(seconds)
       WaitTimeForR53API = 1
+      # FQDN suffix characters for INSUITE Admin
+      AdminSuffix = "-admin"
+      AdminSuffix4RegExp = "\-admin"
     end
   end
 end

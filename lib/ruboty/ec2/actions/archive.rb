@@ -109,6 +109,7 @@ module Ruboty
           params["Param"]      = ins_info[:param] if !ins_info[:param].nil?
           params["AutoStart"]  = ins_info[:auto_start] if !ins_info[:auto_start].nil?
           params["ExceptStop"] = ins_info[:except_stop] if !ins_info[:except_stop].nil?
+          params["Version"]    = ins_info[:version] if !ins_info[:version].nil?
           ec2.update_tags([ami_id], params)
 
           # インスタンス削除処理開始

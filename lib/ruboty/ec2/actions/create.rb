@@ -28,11 +28,12 @@ module Ruboty
           ## 事前チェック ##
 
           # インスタンス名チェック
-          if !ins_name.match(/^[a-z0-9\-]+$/) or ins_name.length > 15
+          if !ins_name.match(/^[a-z0-9\-]+$/) or ins_name.length > 15 or ins_name.match(/#{Ruboty::Ec2::Const::AdminSuffix4RegExp}$/)
             warn_msg =  "インスタンス名は↓このルールで指定してね\n"
             warn_msg << "```\n"
             warn_msg << "  許容文字 -> 半角英数字(小文字)、及び-(半角ハイフン)\n"
-            warn_msg << "  文字列長 -> 15文字以内"
+            warn_msg << "  文字列長 -> 15文字以内\n"
+            warn_msg << "  最後が'#{Ruboty::Ec2::Const::AdminSuffix}'で終わっていないこと"
             warn_msg << "```"
             raise warn_msg
           end
@@ -82,9 +83,10 @@ module Ruboty
           # タグ付け
           params =  {"Name"  => ins_name, "Owner" => _caller,
                      "LastUsedTime" => Time.now.to_s, "ParentId" => ami_id}
-          params["Spec"]  = ami_infos[ami_id][:spec]  if !ami_infos[ami_id][:spec].nil?
-          params["Desc"]  = ami_infos[ami_id][:desc]  if !ami_infos[ami_id][:desc].nil?
-          params["Param"] = ami_infos[ami_id][:param] if !ami_infos[ami_id][:param].nil?
+          params["Spec"]    = ami_infos[ami_id][:spec]    if !ami_infos[ami_id][:spec].nil?
+          params["Desc"]    = ami_infos[ami_id][:desc]    if !ami_infos[ami_id][:desc].nil?
+          params["Param"]   = ami_infos[ami_id][:param]   if !ami_infos[ami_id][:param].nil?
+          params["Version"] = ami_infos[ami_id][:version] if !ami_infos[ami_id][:version].nil?
           puts "  tags params => #{params}"
           ec2.update_tags([ins_id], params)
 
@@ -92,13 +94,14 @@ module Ruboty
           message.reply("インスタンス[#{ins_name}]を作成したよ. DNS設定完了までもう少し待っててね")
 
           # パブリックIPを取得
-          public_ip = ec2.wait_for_associate_public_ip(ins_name)
-          puts "  public_ip [#{public_ip}]"
+          ins_pip_hash = ec2.wait_for_associate_public_ip(ins_name)
 
           # DNS設定
           r53 = Ruboty::Ec2::Helpers::Route53.new(message)
-          r53.update_record_sets({ins_name => public_ip})
-          message.reply("DNS設定が完了したよ[#{util.get_protocol}#{ins_name}.#{util.get_domain} => #{public_ip}]")
+          r53.update_record_sets(ins_pip_hash)
+          reply_msg =  "DNS設定が完了したよ[#{util.get_protocol(ins_pip_hash[ins_name][:version])}#{ins_name}.#{util.get_domain} => #{ins_pip_hash[ins_name][:public_ip]}]"
+          reply_msg << "[管理 #{util.get_protocol(ins_pip_hash[ins_name][:version])}#{ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{util.get_domain}]" if !ins_pip_hash[ins_name][:version].empty?
+          message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
         end

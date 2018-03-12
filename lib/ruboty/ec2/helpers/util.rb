@@ -124,8 +124,12 @@ module Ruboty
           domain
         end
 
-        def get_protocol
-          'http://'
+        def get_protocol(version="")
+          if version.empty?
+            'http://'
+          else
+            'https://'
+          end
         end
 
         def get_default_ami

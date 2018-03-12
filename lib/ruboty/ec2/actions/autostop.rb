@@ -37,7 +37,8 @@ module Ruboty
           ins_pip_hash = {}
           stop_ins_ids = []
           stop_ins_infos.each do |name, ins|
-            ins_pip_hash[name] = ins[:public_ip] if !ins[:public_ip].nil?
+            version = ins[:version].nil? ? '' : ins[:version]
+            ins_pip_hash[name] = {:public_ip => ins[:public_ip], :version => version } if !ins[:public_ip].nil?
             stop_ins_ids << ins[:instance_id]
           end
 

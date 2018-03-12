@@ -36,8 +36,9 @@ module Ruboty
           ec2.stop_ins([ins_id])
 
           # Route53 レコード削除処理
+          version = ins_info[:version].nil? ? '' : ins_info[:version]
           r53 = Ruboty::Ec2::Helpers::Route53.new(message)
-          r53.delete_record_sets({ins_name => ins_info[:public_ip]})
+          r53.delete_record_sets({ins_name => {:public_ip => ins_info[:public_ip], :version => version }})
 
           # 稼働時間を記録
           last_used_time = ins_info[:last_used_time]
