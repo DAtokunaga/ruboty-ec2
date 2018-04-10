@@ -206,8 +206,8 @@ module Ruboty
           # DNS設定
           r53 = Ruboty::Ec2::Helpers::Route53.new(message, to_account)
           r53.update_record_sets(ins_pip_hash)
-          reply_msg =  "DNS設定が完了したよ[#{util.get_protocol(ins_pip_hash[to_ins_name][:version])}#{to_ins_name}.#{util.get_domain} => #{ins_pip_hash[to_ins_name][:public_ip]}]"
-          reply_msg << "[管理 #{util.get_protocol(ins_pip_hash[to_ins_name][:version])}#{to_ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{util.get_domain}]" if !ins_pip_hash[to_ins_name][:version].empty?
+          reply_msg =  "DNS設定が完了したよ[#{to_util.get_protocol(ins_pip_hash[to_ins_name][:version])}#{to_ins_name}.#{to_util.get_domain} => #{ins_pip_hash[to_ins_name][:public_ip]}]"
+          reply_msg << "[管理 #{to_util.get_protocol(ins_pip_hash[to_ins_name][:version])}#{to_ins_name}#{Ruboty::Ec2::Const::AdminSuffix}.#{to_util.get_domain}]" if !ins_pip_hash[to_ins_name][:version].empty?
           message.reply(reply_msg)
         rescue => e
           message.reply(e.message)
