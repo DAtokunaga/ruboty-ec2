@@ -233,7 +233,7 @@ puts "create arc_infos end"
               version = ins[:version].nil? ? '' : ins[:version]
               ins_pip_hash[name] = { :public_ip => ins[:public_ip], :version => version } if !ins[:public_ip].nil?
             end
-            break if (Time.now - started_at).to_i > 90
+            break if (Time.now - started_at).to_i > 300
           end
           if ins_count != ins_pip_hash.size
             raise "インスタンス#{ins_names-ins_pip_hash.keys}が正常に起動しないよー。。(´Д⊂ｸﾞｽﾝ"
