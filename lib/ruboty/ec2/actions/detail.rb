@@ -26,7 +26,7 @@ module Ruboty
             # アーカイブ存在チェック
             if arc_infos.empty?
               raise "インスタンス[#{ins_name}]が見つからないよ" if ins_name.index("ami-").nil?
-              ami_infos = ec2.get_ami_infos
+              ami_infos = ec2.get_ami_infos({'image-id' => ins_name})
               # AMI存在チェック
               raise "インスタンス[#{ins_name}]が見つからないよ" if !ami_infos.include?(ins_name)
               detail_ami(ami_infos[ins_name])

@@ -20,7 +20,8 @@ module Ruboty
           ## 事前チェック ##
 
           ## 現在利用中のアーカイブ情報を取得
-          arc_infos = ec2.get_arc_infos
+          # 2019SpeedUp filter条件に対象インスタンス名を追加
+          arc_infos = ec2.get_arc_infos({'Name' => ins_name})
           # アーカイブ存在チェック
           raise "アーカイブ[#{ins_name}]が見つからないよ" if !arc_infos.include?(ins_name)
           # ステータス[available]チェック
@@ -34,7 +35,8 @@ module Ruboty
           ## メイン処理 ##
 
           ## 現在利用中のインスタンス／AMIの情報を取得
-          ins_infos = ec2.get_ins_infos
+          # 2019SpeedUp filter条件に対象インスタンス名を追加   
+          ins_infos = ec2.get_ins_infos({'Name' => ins_name})
 
           # 作成するインスタンスタイプ判定（HVM or PVにより変わります）
           ins_type = (arc_info[:virtual_type] == "hvm" ?

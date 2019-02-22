@@ -19,7 +19,8 @@ module Ruboty
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
 
           ## 現在利用中のインスタンス情報を取得
-          ins_infos = ec2.get_ins_infos
+          # 2019SpeedUp filter条件にtag:AutoStartを追加(下で同じ値をチェックしてて冗長なのはスルーして)
+          ins_infos = ec2.get_ins_infos({'AutoStart' => '*'})
 
           ## メイン処理 ##
 
@@ -64,7 +65,8 @@ module Ruboty
           ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
 
           ## 現在利用中のインスタンス情報を取得
-          ins_infos = ec2.get_ins_infos
+          # 2019SpeedUp filter条件にtag:AutoStartを追加(下で同じ値をチェックしてて冗長なのはスルーして)
+          ins_infos = ec2.get_ins_infos({'AutoStart' => '*'})
 
           ## メイン処理 ##
 

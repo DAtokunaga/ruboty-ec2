@@ -38,8 +38,11 @@ module Ruboty
           end
 
           ## 現在利用中のインスタンス／AMIの情報を取得
-          ins_infos = ec2.get_ins_infos
-          arc_infos = ec2.get_arc_infos
+          # 2019SpeedUp filter条件に対象インスタンス名を追加
+          ins_infos = ec2.get_ins_infos({'Name' => fr_arc_name})
+          ins_infos.merge!(ec2.get_ins_infos({'Name' => to_ins_name}))
+          arc_infos = ec2.get_arc_infos({'Name' => fr_arc_name})
+          arc_infos.merge!(ec2.get_arc_infos({'Name' => to_ins_name}))
 
           # コピー元チェック
           raise "コピー元インスタンス[#{fr_arc_name}]を先にアーカイブしてね" if !ins_infos[fr_arc_name].nil?
@@ -137,10 +140,10 @@ module Ruboty
           raise "同じ名前ではコピーできないよ" if fr_arc_name == to_ins_name
 
           ## 現在利用中のインスタンス／AMIの情報を取得
-          fr_ins_infos = fr_ec2.get_ins_infos
-          fr_arc_infos = fr_ec2.get_arc_infos
-          to_ins_infos = to_ec2.get_ins_infos
-          to_arc_infos = to_ec2.get_arc_infos
+          fr_ins_infos = fr_ec2.get_ins_infos({'Name' => fr_arc_name})
+          fr_arc_infos = fr_ec2.get_arc_infos({'Name' => fr_arc_name})
+          to_ins_infos = to_ec2.get_ins_infos({'Name' => to_ins_name})
+          to_arc_infos = to_ec2.get_arc_infos({'Name' => to_ins_name})
 
           # コピー元チェック
           raise "コピー元インスタンス[#{fr_arc_name}]を先にアーカイブしてね" if !fr_ins_infos[fr_arc_name].nil?

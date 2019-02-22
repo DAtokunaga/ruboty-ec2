@@ -102,9 +102,17 @@ puts "create arc_infos end"
           ami_infos
         end
 
-        def get_ami_infos
+        def get_ami_infos(filters = {})
           puts "Ruboty::Ec2::Helpers::Ec2.get_ami_infos called"
-          params    = {:filters => [{:name => "is-public", values: ["false"]}]}
+          # 2019SpeedUp filter条件にtag:IsAmi value:true を追加(Imageにもタグ追加を行った)
+          params    = {:filters => [
+                          {:name => "is-public", values: ["false"]},
+                          {:name => "tag:IsAmi" , values: ["true"]},
+                        ]
+                      }
+          filters.each do |key, value|
+            params[:filters] << {:name => key, :values => [value]}
+          end
           resp      = @ec2.describe_images(params)
           ami_infos = {}
 
@@ -226,12 +234,14 @@ puts "create arc_infos end"
           ins_count = ins_names.size
           ins_pip_hash = {}
           while ins_count != ins_pip_hash.size do
-            sleep(1)
-            ins_infos = get_ins_infos
-            ins_infos.each do |name, ins|
-              next if !ins_names.include?(name)
+            # 2019SpeedUp 対象インスタンスごとにfilterを指定して1つずつ取得するよう修正
+            sleep(3)
+            ins_names.each do |ins_name|
+              ins_info = get_ins_infos({'Name' => ins_name})
+              next if ins_info.empty?
+              ins     = ins_info[ins_name]
               version = ins[:version].nil? ? '' : ins[:version]
-              ins_pip_hash[name] = { :public_ip => ins[:public_ip], :version => version } if !ins[:public_ip].nil?
+              ins_pip_hash[ins_name] = { :public_ip => ins[:public_ip], :version => version } if !ins[:public_ip].nil?
             end
             break if (Time.now - started_at).to_i > 300
           end
@@ -255,16 +265,20 @@ puts "create arc_infos end"
           ami_count   = ami_names.size
           ami_id_hash = {}
           while ami_count != ami_id_hash.size do
+            # 2019SpeedUp 対象アーカイブ(AMI)ごとにfilterを指定して1つずつ取得するよう修正
             sleep(60)
-            ami_infos = get_arc_infos
-            ami_infos.each do |name, ami_info|
-              next if !ami_names.include?(name)
-              added_flag = ami_id_hash[name].nil?
+            #ami_infos = get_arc_infos
+            #ami_infos.each do |name, ami_info|
+            ami_names.each do |ami_name|
+              ami_infos = get_arc_infos({'Name' => ami_name})
+              next if ami_infos.empty?
+              ami_info = ami_infos[ami_name]
+              added_flag = ami_id_hash[ami_name].nil?
               if ami_info[:state] == "available"
-                ami_id_hash[name] = ami_info
+                ami_id_hash[ami_name] = ami_info
               end
-              if added_flag and !ami_id_hash[name].nil?
-                puts "　アーカイブ[#{ami_info[:name]}]作成完了！"
+              if added_flag and !ami_id_hash[ami_name].nil?
+                puts "　アーカイブ[#{ami_info[:ami_name]}]作成完了！"
               end
             end
             break if (Time.now - started_at).to_i > 1800

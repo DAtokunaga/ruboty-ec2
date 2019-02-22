@@ -39,9 +39,10 @@ module Ruboty
           end
 
           ## 現在利用中のインスタンス／AMIの情報を取得
-          ins_infos = ec2.get_ins_infos
-          arc_infos = ec2.get_arc_infos
-          ami_infos = ec2.get_ami_infos
+          # 2019SpeedUp filter条件に対象インスタンス名、対象AMI-IDを追加
+          ins_infos = ec2.get_ins_infos({'Name' => ins_name})
+          arc_infos = ec2.get_arc_infos({'Name' => ins_name})
+          ami_infos = ec2.get_ami_infos({'image-id' => ami_id})
 
           ## 使用するAMI IDを取得し存在チェック
           raise "AMI ID[#{ami_id}]が間違っているよ" if !ami_infos.include?(ami_id)

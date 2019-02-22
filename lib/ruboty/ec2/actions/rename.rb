@@ -33,8 +33,10 @@ module Ruboty
           raise "同じインスタンス名は指定できないよ" if old_ins_name == new_ins_name
 
           ## 現在利用中のインスタンス／AMIの情報を取得
-          ins_infos = ec2.get_ins_infos
-          arc_infos = ec2.get_arc_infos
+          # 2019SpeedUp filter条件に対象インスタンス名を追加
+          ins_infos = ec2.get_ins_infos({'Name' => old_ins_name})
+          ins_infos.merge!(ec2.get_ins_infos({'Name' => new_ins_name}))
+          arc_infos = ec2.get_arc_infos({'Name' => new_ins_name})
 
           # リネーム元チェック
           raise "インスタンス[#{old_ins_name}]が見つからないよ" if ins_infos[old_ins_name].nil?

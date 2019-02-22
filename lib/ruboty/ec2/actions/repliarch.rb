@@ -42,8 +42,16 @@ module Ruboty
           end
 
           ## 現在利用中のインスタンス／AMIの情報を取得
-          ins_infos = ec2.get_ins_infos
-          arc_infos = ec2.get_arc_infos
+          # 2019SpeedUp filter条件に対象インスタンス名を追加   
+          ins_infos = {}
+          arc_infos = {}
+          fr_arc_array.each do |fr_arc_name| 
+            arc_infos.merge!(ec2.get_arc_infos({'Name' => fr_arc_name}))
+          end
+          to_ins_array.each do |to_ins_name|
+            ins_infos.merge!(ec2.get_ins_infos({'Name' => to_ins_name}))
+            arc_infos.merge!(ec2.get_arc_infos({'Name' => to_ins_name}))
+          end
 
           # コピー元チェック
           fr_arc_array.each do |fr_arc_name|
