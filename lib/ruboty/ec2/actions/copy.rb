@@ -75,9 +75,16 @@ module Ruboty
           private_ip = (ipaddr_range - ipaddr_used).sample
 
           # 作成するインスタンスタイプ判定（HVM or PVにより変わります）
-          ins_type = (fr_arc_info[:virtual_type] == "hvm" ?
-                      Ruboty::Ec2::Const::InsTypeHVM :
-                      Ruboty::Ec2::Const::InsTypePV)
+          # option = "trial" なら InsTypeを変更するよう機能追加 2019.03.04
+          if fr_arc_info[:virtual_type] == "hvm"
+            if !message[:option].nil? and message[:option] == "trial"
+              ins_type = Ruboty::Ec2::Const::InsTypeHVMForTrial
+            else
+              ins_type = Ruboty::Ec2::Const::InsTypeHVM
+            end
+          else
+            ins_type = Ruboty::Ec2::Const::InsTypePV
+          end
 
           # インスタンス作成
           params = {:image_id           => fr_arc_info[:image_id],
@@ -95,7 +102,12 @@ module Ruboty
           ec2.update_tags([ins_id], params)
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
-          message.reply("インスタンス[#{to_ins_name}]としてコピーしたよ. DNS設定完了までもう少し待っててね")
+          # option = "trial" なら InsTypeを変更するよう機能追加 2019.03.04
+          if ins_type == Ruboty::Ec2::Const::InsTypeHVMForTrial
+             message.reply("インスタンス[#{to_ins_name}]としてTrialオプションでコピーしたよ. DNS設定完了までもう少し待っててね")
+          else
+            message.reply("インスタンス[#{to_ins_name}]としてコピーしたよ. DNS設定完了までもう少し待っててね")
+          end
 
           # パブリックIPを取得
           ins_pip_hash = ec2.wait_for_associate_public_ip(to_ins_name)
@@ -179,9 +191,16 @@ module Ruboty
           private_ip = (ipaddr_range - ipaddr_used).sample
 
           # 作成するインスタンスタイプ判定（HVM or PVにより変わります）
-          ins_type = (fr_arc_info[:virtual_type] == "hvm" ?
-                      Ruboty::Ec2::Const::InsTypeHVM :
-                      Ruboty::Ec2::Const::InsTypePV)
+          # option = "trial" なら InsTypeを変更するよう機能追加 2019.03.04
+          if fr_arc_info[:virtual_type] == "hvm"
+            if !message[:option].nil? and message[:option] == "trial"
+              ins_type = Ruboty::Ec2::Const::InsTypeHVMForTrial
+            else
+              ins_type = Ruboty::Ec2::Const::InsTypeHVM
+            end
+          else
+            ins_type = Ruboty::Ec2::Const::InsTypePV
+          end
 
           # インスタンス作成
           params = {:image_id           => fr_arc_info[:image_id],
@@ -198,7 +217,12 @@ module Ruboty
           to_ec2.update_tags([ins_id], params)
 
           # メッセージ置換・整形＆インスタンス作成した旨応答
-          message.reply("チャンネル[#{to_account}]へインスタンス[#{to_ins_name}]としてコピーしたよ. DNS設定完了までもう少し待っててね")
+          # option = "trial" なら InsTypeを変更するよう機能追加 2019.03.04
+          if ins_type == Ruboty::Ec2::Const::InsTypeHVMForTrial
+            message.reply("チャンネル[#{to_account}]へインスタンス[#{to_ins_name}]としてTrialオプションでコピーしたよ. DNS設定完了ま>でもう少し待っててね")
+          else
+            message.reply("チャンネル[#{to_account}]へインスタンス[#{to_ins_name}]としてコピーしたよ. DNS設定完了までもう少し待っててね")
+          end
 
           # パブリックIPを取得
           ins_pip_hash = to_ec2.wait_for_associate_public_ip(to_ins_name)

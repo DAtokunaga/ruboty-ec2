@@ -14,6 +14,8 @@ module Ruboty
       InsTypePV  = "m1.medium"
       # instance type (for hvm in use RHEL/CentOS 6 later)
       InsTypeHVM = "t2.medium"
+      # instance type for Trial (for hvm)
+      InsTypeHVMForTrial = "t2.large"
       # price each instance type
       InsPrice   = {
         "t2.micro"  => 0.02,

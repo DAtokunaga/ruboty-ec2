@@ -47,7 +47,7 @@ module Ruboty
       on /ec2 *extract +(?<ins_name>\S+)\z/,  name: 'extract',   description: 'extract backed up instance'
       on /ec2 *rename +(?<old_ins_name>\S+) +(?<new_ins_name>\S+)\z/,
                                               name: 'rename',    description: 'rename instance name'
-      on /ec2 *copy +(?<from_arc>\S+) +(?<to_ins>\S+)\z/,
+      on /ec2 *copy +(?<from_arc>\S+) +(?<to_ins>\S+) *(?<option>\S+)* *\z/,
                                               name: 'copy',      description: 'copy instance'
       on /ec2 *access +(?<cmd>give|revoke) +(?<ins_name>\S+) *(?<sg_name>\S+)*\z/,
                                               name: 'access',    description: 'manage access permit'
