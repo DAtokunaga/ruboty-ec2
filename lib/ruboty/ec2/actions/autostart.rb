@@ -9,6 +9,7 @@ module Ruboty
           list if cmd_name == "list"
           add  if cmd_name == "add"
           del  if cmd_name == "del"
+          stopall if cmd_name == "stopall"
         end
 
         private
@@ -155,6 +156,76 @@ module Ruboty
           ec2.delete_tags([ins_info[:instance_id]], params)
           reply_msg = "インスタンス[#{ins_name}]を自動起動しないように設定したよ"
           message.reply(reply_msg)
+        rescue => e
+          message.reply(e.message)
+        end
+
+        def stopall
+          # AWSアクセス、その他ユーティリティのインスタンス化
+          util = Ruboty::Ec2::Helpers::Util.new(message)
+          ec2  = Ruboty::Ec2::Helpers::Ec2.new(message)
+
+          ## 現在利用中のインスタンス情報を取得
+          # 2019SpeedUp filter条件にtag:AutoStartを追加(下で同じ値をチェックしてて冗長なのはスルーして)
+          ins_infos = ec2.get_ins_infos({'AutoStart' => '*'})
+
+          ## メイン処理 ##
+
+          # 起動中の自動起動対象インスタンス取得
+          stop_ins_infos = {}
+          ins_infos.each do |name, ins|
+            next if ins[:state] != "running"
+            next if !/10.[\d]+.0.4$/.match(ins[:private_ip]).nil?
+            next if ins[:auto_start].nil? or ins[:auto_start].empty?
+            stop_ins_infos[name] = ins
+          end
+          return if stop_ins_infos.empty?
+
+          # 停止前にPublicIP取得
+          ins_pip_hash = {}
+          stop_ins_ids = []
+          stop_ins_infos.each do |name, ins|
+            version = ins[:version].nil? ? '' : ins[:version]
+            ins_pip_hash[name] = {:public_ip => ins[:public_ip], :version => version } if !ins[:public_ip].nil?
+            stop_ins_ids << ins[:instance_id]
+          end
+
+          # インスタンス停止
+          ec2.stop_ins(stop_ins_ids)
+
+          # 稼働時間を記録
+          brain = Ruboty::Ec2::Helpers::Brain.new(message)
+          stop_ins_infos.each do |name, ins|
+            last_used_time = ins[:last_used_time]
+            next if last_used_time.nil? or last_used_time.empty?
+            # LastUsedTimeから現在までの課金対象時間を算出
+            uptime = util.get_time_diff(last_used_time)
+            # Redis上の月別稼働時間累積値を更新
+            brain.save_ins_uptime(name, uptime)
+            # Redis上にins_type,os_typeを保存(インスタンス別料金算出で利用)
+            brain.save_ins_type(name, ins[:instance_type])
+            os_type = (!ins[:spec].nil? and ins[:spec].downcase.include?("rhel")) ? "rhel" : "centos"
+            brain.save_os_type(name, os_type)
+          end
+
+          # タグ付け
+          params =  {"LastUsedTime" => Time.now.to_s}
+          ec2.update_tags(stop_ins_ids, params)
+          # replicateした場合に付加されるタグを除去
+          replicated_ins_ids = []
+          params =  ["ReplicaInfo"]
+          stop_ins_infos.each do |name, ins|
+            replicated_ins_ids << ins[:instance_id] if !ins[:replica_info].nil?
+          end
+          ec2.delete_tags(replicated_ins_ids, params) if !replicated_ins_ids.empty?
+
+          reply_msg  = "起動中の自動起動対象インスタンス#{stop_ins_infos.keys}を停止したよ."
+          message.reply(reply_msg)
+
+          # DNS設定
+          r53 = Ruboty::Ec2::Helpers::Route53.new(message)
+          r53.delete_record_sets(ins_pip_hash)
+          message.reply("DNS設定を削除したよ.")
         rescue => e
           message.reply(e.message)
         end

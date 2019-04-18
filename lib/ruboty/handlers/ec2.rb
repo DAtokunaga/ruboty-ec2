@@ -25,6 +25,7 @@ require "ruboty/ec2/actions/replicate"
 require "ruboty/ec2/actions/repliarch"
 require "ruboty/ec2/actions/privilege"
 require "ruboty/ec2/actions/owner"
+require "ruboty/ec2/actions/dnsregister"
 
 module Ruboty
   module Handlers
@@ -32,7 +33,7 @@ module Ruboty
       $stdout.sync = true
 
       # 自動起動／停止系
-      on(/ec2 *autostart +(?<cmd>exec|list|add|del) *(?<ins_name>\S+)*\z/,
+      on(/ec2 *autostart +(?<cmd>exec|list|add|del|stopall) *(?<ins_name>\S+)*\z/,
                                               name: 'autostart', description: 'manage auto-start instances')
       on(/ec2 *autostop +(?<cmd>exec|list|add|del) *(?<ins_name>\S+)*\z/,
                                               name: 'autostop',  description: 'manage auto-stop instances')
@@ -71,6 +72,8 @@ module Ruboty
       on /ec2 +privilege +list\z/,            name: 'privilege', description: 'show privilege list'
       on(/ec2 +owner +(?<cmd>transfer|absence) *(?<ins_name>\S+)* *(?<to_user>\S+)* *\z/,
                                               name: 'owner',     description: 'manage ownership of instance')
+      on /ec2 *dnsregister +(?<resource>instance|autostart) *(?<ins_name>\S+)*\z/,
+                                              name: 'dnsregister', description: '(re-)register dns for running instance'
 
       def create(message)
         Ruboty::Ec2::Actions::Create.new(message).call
@@ -158,6 +161,10 @@ module Ruboty
 
       def owner(message)
         Ruboty::Ec2::Actions::Owner.new(message).call
+      end
+
+      def dnsregister(message)
+        Ruboty::Ec2::Actions::Dnsregister.new(message).call
       end
     end
   end
